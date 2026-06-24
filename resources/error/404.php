@@ -1,21 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 — Page Not Found</title>
-    <style>
-        body { font-family: system-ui, sans-serif; text-align: center; padding: 80px 20px; color: #374151; }
-        h1   { font-size: 4rem; font-weight: 800; color: #111827; margin: 0; }
-        p    { font-size: 1.125rem; color: #6B7280; margin: 12px 0 32px; }
-        a    { display: inline-block; padding: 10px 24px; background: #4F46E5; color: #fff;
-               border-radius: 8px; text-decoration: none; font-weight: 600; }
-        a:hover { background: #4338CA; }
-    </style>
-</head>
-<body>
-    <h1>404</h1>
-    <p>The page you're looking for doesn't exist.</p>
-    <a href="/">Go Home</a>
-</body>
-</html>
+<?php
+/**
+ * resources/error/404.php
+ *
+ * Page Not Found error view.
+ * Rendered inside resources/layouts/error.php.
+ */
+?>
+<style>
+    .error-code    { font-size: 6rem; font-weight: 900; color: #e2e8f0; line-height: 1; }
+    .error-heading { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; color: #0f172a; }
+    .error-body    { color: #64748b; font-size: 0.9375rem; line-height: 1.6; max-width: 30rem; text-align: center; }
+    .error-actions { display: flex; gap: 0.75rem; margin-top: 2rem; flex-wrap: wrap; justify-content: center; }
+    .btn-primary   {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.625rem 1.25rem; background: #1d4ed8; color: #fff;
+        border-radius: 0.625rem; font-size: 0.875rem; font-weight: 600;
+        text-decoration: none; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-ghost {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.625rem 1.25rem; background: #f1f5f9; color: #475569;
+        border-radius: 0.625rem; font-size: 0.875rem; font-weight: 600;
+        text-decoration: none; transition: background 0.15s;
+    }
+    .btn-ghost:hover { background: #e2e8f0; }
+</style>
+
+<div style="text-align:center;">
+    <p class="error-code">404</p>
+    <h1 class="error-heading">Page not found</h1>
+    <p class="error-body">
+        The page you're looking for doesn't exist or may have been moved.
+        Check the URL or head back to the compose page.
+    </p>
+    <div class="error-actions">
+        <a href="/" class="btn-primary">
+            <i class="bi bi-house-fill"></i>
+            Go home
+        </a>
+        <a href="javascript:history.back()" class="btn-ghost">
+            <i class="bi bi-arrow-left"></i>
+            Go back
+        </a>
+    </div>
+</div>

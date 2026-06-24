@@ -21,21 +21,6 @@ use App\Helpers\Validator;
 abstract class BaseController
 {
     /**
-     * Render a view and wrap it in an HTML response.
-     *
-     * The view file is resolved to resources/{template}.php
-     * Data keys are available as variables inside the view.
-     *
-     * Usage:
-     *   return $this->view('recipients/index', ['recipients' => $list]);
-     */
-    protected function view(string $template, array $data = []): Response
-    {
-        $html = view($template, $data);
-        return Response::html($html);
-    }
-
-    /**
      * Return a JSON response.
      *
      * Usage:
@@ -154,4 +139,34 @@ abstract class BaseController
         session()->flash('toast', ['type' => $toastType, 'message' => $toastMessage]);
         return $this->redirect($redirectUrl);
     }
+    /**
+ * Render a view inside the authenticated app layout and return as a Response.
+ *
+ * Controllers call this for full-page responses. HTMX partial responses
+ * should call $this->partial() instead (see below).
+ *
+ * @param string $template  Path relative to resources/ without .php extension
+ * @param array  $data      Variables passed to the view
+ * @param string $layout    Layout to wrap the view in (default: 'app')
+ */
+protected function view(string $template, array $data = [], string $layout = 'app'): Response
+{
+    $html = view($template, $data, $layout);
+    return Response::html($html);
+}
+
+/**
+ * Render a view with NO layout — for HTMX partial responses.
+ *
+ * When HTMX swaps only part of the page (e.g. a table, a form, a row),
+ * we return only the HTML fragment, not the full document.
+ *
+ * Usage:
+ *   return $this->partial('recipients/_table', ['recipients' => $list]);
+ */
+protected function partial(string $template, array $data = []): Response
+{
+    $html = view($template, $data, null);
+    return Response::html($html);
+}
 }

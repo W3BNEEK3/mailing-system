@@ -34,32 +34,55 @@ function config(string $key, mixed $default = null): mixed
 }
 
 // ─── Views ────────────────────────────────────────────────────────────────
-
 /**
- * Render a view template and return the HTML as a string.
+ * Render a view file and optionally wrap it in a layout.
  *
- * The view file lives in resources/{path}.php
- * All $data keys are extracted as local variables inside the view.
+ * Usage (no layout — returns the view HTML directly):
+ *   $html = view('auth/login', ['pageTitle' => 'Sign In']);
  *
- * Usage:
- *   view('auth/login', ['errors' => ['Email is required']])
- *   view('compose/index', ['templates' => $templates])
+ * Usage (with layout — the view HTML is injected as $content):
+ *   $html = view('compose/index', ['pageTitle' => 'Compose'], 'app');
+ *
+ * @param string      $path    Relative to resources/ — e.g. 'compose/index'
+ * @param array       $data    Variables extracted into the view scope
+ * @param string|null $layout  Layout name in resources/layouts/ (without .php)
  */
-function view(string $path, array $data = []): string
+function view(string $path, array $data = [], ?string $layout = null): string
 {
+    // Resolve the view file path
     $file = BASE_PATH . '/resources/' . ltrim($path, '/') . '.php';
 
     if (!file_exists($file)) {
-        throw new \RuntimeException("View file not found: [{$file}]");
+        throw new \RuntimeException("View not found: {$file}");
     }
 
-    // extract() converts array keys to local variables
-    // e.g. ['name' => 'Alice'] becomes $name = 'Alice' inside the view
+    // Extract variables so they are available inside the view file as local variables.
+    // EXTR_SKIP prevents user data from overwriting existing local variables like $file.
     extract($data, EXTR_SKIP);
 
-    // Start output buffering — capture everything the view echoes
+    // Capture the view output into a string
     ob_start();
-    include $file;
+    require $file;
+    $content = ob_get_clean();
+
+    // If no layout requested, return the raw view output
+    if ($layout === null) {
+        return $content;
+    }
+
+    // Resolve the layout file
+    $layoutFile = BASE_PATH . '/resources/layouts/' . $layout . '.php';
+
+    if (!file_exists($layoutFile)) {
+        throw new \RuntimeException("Layout not found: {$layoutFile}");
+    }
+
+    // Re-extract data so the layout also has access to $pageTitle, etc.
+    // $content is already set above — it's injected as the slot.
+    extract($data, EXTR_SKIP);
+
+    ob_start();
+    require $layoutFile;
     return ob_get_clean();
 }
 

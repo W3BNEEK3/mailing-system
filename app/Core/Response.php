@@ -90,39 +90,8 @@ class Response
         return $this;
     }
 
-    /**
-     * Add an HTMX HX-Trigger header.
-     *
-     * HTMX reads this header and fires a JavaScript event on the page.
-     * We use it to trigger toast notifications from the server:
-     *
-     *   ->htmxTrigger('showToast', ['type' => 'success', 'message' => 'Saved!'])
-     *
-     * The JS in app.js listens for the 'showToast' event and renders the toast.
-     */
-    public function htmxTrigger(string $eventName, mixed $data = null): static
-    {
-        $trigger = $data !== null
-            ? json_encode([$eventName => $data])
-            : json_encode([$eventName => true]);
 
-        $this->headers['HX-Trigger'] = $trigger;
-        return $this;
-    }
-
-    /**
-     * Tell HTMX to perform a client-side redirect.
-     *
-     * Different from a normal redirect: the browser doesn't reload the page,
-     * instead HTMX navigates using its own history API.
-     * Use this in HTMX responses when you want smooth navigation after a form submit.
-     */
-    public function htmxRedirect(string $url): static
-    {
-        $this->headers['HX-Redirect'] = $url;
-        return $this;
-    }
-
+    
     // ─── Sending ─────────────────────────────────────────────────────────
 
     /**
@@ -180,4 +149,54 @@ class Response
 
         exit;
     }
+    /**
+ * Append an HX-Trigger header to fire a named HTMX event on the client.
+ *
+ * The event name maps to a document.addEventListener() listener in app.js.
+ * Multiple calls chain together in a single JSON header value.
+ *
+ * Usage — trigger a toast:
+ *   return $this->partial('compose/_form')
+ *       ->htmxTrigger('showToast', ['type' => 'success', 'message' => 'Email sent.']);
+ *
+ * Usage — trigger multiple events:
+ *   return Response::html('')
+ *       ->htmxTrigger('showToast', ['type' => 'success', 'message' => 'Saved.'])
+ *       ->htmxTrigger('refreshRecipients');
+ *
+ * @param string $eventName  The JS event name (e.g. 'showToast')
+ * @param mixed  $data       Optional data passed to the event detail
+ */
+public function htmxTrigger(string $eventName, mixed $data = null): static
+{
+    // Read the current HX-Trigger header value (may already have events)
+    $existing = $this->headers['HX-Trigger'] ?? null;
+
+    $events = $existing ? json_decode($existing, true) : [];
+
+    if ($data !== null) {
+        $events[$eventName] = $data;
+    } else {
+        $events[$eventName] = true;
+    }
+
+    $this->headers['HX-Trigger'] = json_encode($events);
+    return $this;
+}
+
+/**
+ * Set the HX-Redirect header, causing HTMX to do a client-side redirect.
+ *
+ * Use this instead of a regular redirect when the current request was
+ * made by HTMX — a normal Location redirect header won't work because
+ * HTMX intercepts the response.
+ *
+ * Usage:
+ *   return Response::html('')->htmxRedirect('/compose');
+ */
+public function htmxRedirect(string $url): static
+{
+    $this->headers['HX-Redirect'] = $url;
+    return $this;
+}
 }
