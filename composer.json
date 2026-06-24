@@ -1,0 +1,21 @@
+{
+    "name": "emirates/app",
+    "description": "Emirates — Single-Tenant Email Sending Platform",
+    "type": "project",
+    "require": {
+        "php": "^8.3",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "bootstrap/helpers.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    }
+}

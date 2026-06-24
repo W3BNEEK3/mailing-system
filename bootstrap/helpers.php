@@ -1,0 +1,272 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * bootstrap/helpers.php
+ *
+ * Global helper functions available everywhere in the application and in views.
+ * These are thin wrappers around the App container and core services.
+ *
+ * Composer's "files" autoload in composer.json ensures this file is loaded
+ * automatically — you never need to require it manually.
+ */
+
+use App\Core\App;
+use App\Core\Config;
+use App\Core\Logger;
+use App\Core\Session;
+use App\Core\Response;
+
+// ─── Config ───────────────────────────────────────────────────────────────
+
+/**
+ * Read a config value using dot notation.
+ *
+ * Usage:
+ *   config('app.name')       => 'Emirates'
+ *   config('database.host')  => 'localhost'
+ *   config('app.missing', 'default') => 'default'
+ */
+function config(string $key, mixed $default = null): mixed
+{
+    return App::getInstance()->make(Config::class)->get($key, $default);
+}
+
+// ─── Views ────────────────────────────────────────────────────────────────
+
+/**
+ * Render a view template and return the HTML as a string.
+ *
+ * The view file lives in resources/{path}.php
+ * All $data keys are extracted as local variables inside the view.
+ *
+ * Usage:
+ *   view('auth/login', ['errors' => ['Email is required']])
+ *   view('compose/index', ['templates' => $templates])
+ */
+function view(string $path, array $data = []): string
+{
+    $file = BASE_PATH . '/resources/' . ltrim($path, '/') . '.php';
+
+    if (!file_exists($file)) {
+        throw new \RuntimeException("View file not found: [{$file}]");
+    }
+
+    // extract() converts array keys to local variables
+    // e.g. ['name' => 'Alice'] becomes $name = 'Alice' inside the view
+    extract($data, EXTR_SKIP);
+
+    // Start output buffering — capture everything the view echoes
+    ob_start();
+    include $file;
+    return ob_get_clean();
+}
+
+// ─── Redirects ────────────────────────────────────────────────────────────
+
+/**
+ * Create a redirect response.
+ *
+ * Usage:
+ *   return redirect('/login');
+ *   return redirect('/compose', 302);
+ */
+function redirect(string $url, int $status = 302): Response
+{
+    return Response::redirect($url, $status);
+}
+
+/**
+ * Redirect back to the previous page.
+ *
+ * Usage:
+ *   return back();
+ */
+function back(): Response
+{
+    return Response::back();
+}
+
+// ─── Security ─────────────────────────────────────────────────────────────
+
+/**
+ * HTML-escape a value to prevent XSS attacks.
+ * Always use this when outputting user-supplied data in HTML.
+ *
+ * Usage in views:
+ *   <p><?= e($user->name) ?></p>
+ *   <input value="<?= e($email) ?>">
+ */
+function e(mixed $value): string
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/**
+ * Get the CSRF token for the current session.
+ * Used in the <meta> tag in the layout.
+ *
+ * Usage:
+ *   <meta name="csrf-token" content="<?= csrf_token() ?>">
+ */
+function csrf_token(): string
+{
+    return session()->csrfToken();
+}
+
+/**
+ * Output a hidden CSRF input field for use in forms.
+ *
+ * Usage in views:
+ *   <form method="POST">
+ *       <?= csrf_field() ?>
+ *       ...
+ *   </form>
+ */
+function csrf_field(): string
+{
+    return '<input type="hidden" name="_csrf" value="' . e(csrf_token()) . '">';
+}
+
+// ─── Session ──────────────────────────────────────────────────────────────
+
+/**
+ * Get the Session instance.
+ *
+ * Usage:
+ *   session()->set('user_id', 1);
+ *   session()->get('user_id');
+ */
+function session(): Session
+{
+    return App::getInstance()->make(Session::class);
+}
+
+/**
+ * Get a previously flashed input value (for repopulating forms after validation errors).
+ *
+ * Usage in views:
+ *   <input value="<?= e(old('email')) ?>">
+ */
+function old(string $key, mixed $default = ''): mixed
+{
+    $oldInput = session()->getFlash('_old_input') ?? [];
+
+    // getFlash deletes the value after reading, but we might call old() multiple times.
+    // Re-flash if there's still data to preserve for the current render.
+    if (!empty($oldInput)) {
+        session()->flash('_old_input', $oldInput);
+    }
+
+    return $oldInput[$key] ?? $default;
+}
+
+/**
+ * Get validation errors flashed to the session.
+ *
+ * Usage in views:
+ *   errors()           => ['email' => 'Email is required', ...]  (all errors)
+ *   errors('email')    => 'Email is required'                    (single field)
+ */
+function errors(?string $key = null): array|string
+{
+    $allErrors = session()->getFlash('_errors') ?? [];
+
+    // Re-flash so multiple calls to errors() within one render all work
+    if (!empty($allErrors)) {
+        session()->flash('_errors', $allErrors);
+    }
+
+    if ($key !== null) {
+        return $allErrors[$key] ?? '';
+    }
+
+    return $allErrors;
+}
+
+// ─── Paths ────────────────────────────────────────────────────────────────
+
+/**
+ * Get the absolute path to a file inside the storage/ directory.
+ *
+ * Usage:
+ *   storage_path('logs')                  => /var/www/emirates/storage/logs
+ *   storage_path('uploads/logos/logo.png') => /var/www/emirates/storage/uploads/logos/logo.png
+ */
+function storage_path(string $path = ''): string
+{
+    $base = BASE_PATH . '/storage';
+    return $path ? $base . '/' . ltrim($path, '/') : $base;
+}
+
+/**
+ * Get the full URL to a public asset file.
+ *
+ * Usage:
+ *   asset('css/app.css')   => http://localhost:8000/assets/css/app.css
+ *   asset('js/htmx.min.js') => http://localhost:8000/assets/js/htmx.min.js
+ */
+function asset(string $path): string
+{
+    $base = rtrim(config('app.url', 'http://localhost'), '/');
+    return $base . '/assets/' . ltrim($path, '/');
+}
+
+/**
+ * Get the full URL to an application route.
+ *
+ * Usage:
+ *   url('/login')      => http://localhost:8000/login
+ *   url('/recipients') => http://localhost:8000/recipients
+ */
+function url(string $path = ''): string
+{
+    $base = rtrim(config('app.url', 'http://localhost'), '/');
+    return $path ? $base . '/' . ltrim($path, '/') : $base;
+}
+
+// ─── Logging ──────────────────────────────────────────────────────────────
+
+/**
+ * Get the Logger instance.
+ *
+ * Usage:
+ *   logger()->info('User logged in', ['user_id' => 1]);
+ *   logger()->error('Send failed', ['provider' => 'resend']);
+ */
+function logger(): Logger
+{
+    return App::getInstance()->make(Logger::class);
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────
+
+/**
+ * Read a value from the settings table (app-level configuration saved by the user).
+ *
+ * This is a STUB for Phase 0. It returns the $default until the
+ * SettingRepository is built in Phase 1.
+ *
+ * Usage:
+ *   setting('primary_color', '#4F46E5')
+ *   setting('default_sender_name')
+ */
+function setting(string $key, mixed $default = null): mixed
+{
+    // Phase 0 stub — will be replaced in Phase 1 once SettingRepository exists.
+    // At that point this function will look up the value in the settings DB table.
+    try {
+        if (class_exists(\App\Repositories\SettingRepository::class)) {
+            static $repo = null;
+            if ($repo === null) {
+                $repo = new \App\Repositories\SettingRepository();
+            }
+            return $repo->get($key, $default);
+        }
+    } catch (\Throwable) {
+        // Fall through to default
+    }
+
+    return $default;
+}

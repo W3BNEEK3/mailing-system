@@ -1,0 +1,29 @@
+# public/.htaccess
+# Rewrites all requests to public/index.php so PHP handles routing.
+
+# Require mod_rewrite to be enabled
+Options -MultiViews
+Options -Indexes
+
+# Turn on the rewrite engine
+RewriteEngine On
+
+# If the request is for a real file (CSS, JS, images), serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+# If the request is for a real directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Otherwise, route everything through index.php
+# QSA = append query string, L = last rule
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Deny direct access to .env files
+<Files ".env">
+    Order deny,allow
+    Deny from all
+</Files>
+
+# Security headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
