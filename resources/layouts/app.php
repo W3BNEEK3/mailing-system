@@ -91,6 +91,15 @@ $siteLogo       = setting('site_logo_path',  null);
             opacity: 1;
         }
 
+        /* HTMX indicator styling: hide by default, show on request */
+        .htmx-indicator {
+            display: none !important;
+        }
+        .htmx-request .htmx-indicator,
+        .htmx-request.htmx-indicator {
+            display: flex !important;
+        }
+
         /*
          * Sidebar nav link active state.
          * The active class is applied by the Html::active() helper.

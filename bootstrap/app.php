@@ -27,6 +27,13 @@ date_default_timezone_set($_ENV['TIMEZONE'] ?? 'UTC');
 $app = new \App\Core\App();
 \App\Core\App::setInstance($app);
 
+$app->bind(
+    \App\Controllers\CredentialController::class,
+    fn() => new \App\Controllers\CredentialController(
+        credentials: $app->make(\App\Services\CredentialService::class),
+    )
+);
+
 // ── 4. Register core singletons ────────────────────────────────────────────
 
 // Config: reads config/ files, accessed via config('app.name')
@@ -76,6 +83,12 @@ $app->singleton(\App\Repositories\RecipientRepository::class, fn() =>
 
 $app->singleton(\App\Repositories\LogRepository::class, fn() =>
     new \App\Repositories\LogRepository()
+);
+
+$app->singleton(\App\Services\TemplateRenderService::class, fn() => 
+    new \App\Services\TemplateRenderService(
+        settings: $app->make(\App\Repositories\SettingRepository::class),
+    )
 );
 
 

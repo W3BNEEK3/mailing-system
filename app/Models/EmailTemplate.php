@@ -9,58 +9,75 @@ use App\Core\Model;
 /**
  * EmailTemplate
  *
- * Represents a stored email template (built-in or custom).
+ * Represents a row in the `email_templates` table.
  *
- * supports_logo and supports_colors are boolean flags detected at upload
- * by scanning the HTML for {{LOGO_URL}} and {{PRIMARY_COLOR}} tokens.
- * They control which toolbar overrides are available in the compose page.
- *
- * Usage:
- *   $template = EmailTemplate::find(1);
- *   echo $template->name;
- *   if ($template->supportsLogo()) { ... }
- *   if ($template->isBuiltIn()) { ... }
+ * Properties map directly to table columns. Cast types are applied
+ * in fromArray() so controllers and views always receive correct PHP types
+ * regardless of how PDO returns the data.
  */
 class EmailTemplate extends Model
 {
     protected static string $table = 'email_templates';
 
-    protected array $fillable = [
-        'name',
-        'category',
-        'html_content',
-        'thumbnail_path',
-        'is_built_in',
-        'supports_logo',
-        'supports_colors',
-    ];
-
-    // ─── Domain methods ────────────────────────────────────────────────────
+    public int    $id;
+    public string $name;
+    public string $category;
+    public string $htmlContent;
+    public ?string $thumbnailPath;
+    public bool   $isBuiltIn;
+    public bool   $supportsLogo;
+    public bool   $supportsColors;
+    public string $createdAt;
+    public string $updatedAt;
 
     /**
-     * Check if this template supports logo injection.
-     * True means the HTML contains {{LOGO_URL}}.
+     * Hydrate an EmailTemplate from a PDO row array.
+     *
+     * @param array $row  Associative array of column_name => value from PDO
+     * @return static
      */
-    public function supportsLogo(): bool
+    public static function fromArray(array $row): static
     {
-        return (bool)$this->supports_logo;
+        $obj                = new static();
+        $obj->id            = (int)  $row['id'];
+        $obj->name          = (string) $row['name'];
+        $obj->category      = (string) $row['category'];
+        $obj->htmlContent   = (string) $row['html_content'];
+        $obj->thumbnailPath = $row['thumbnail_path'] ?? null;
+        $obj->isBuiltIn     = (bool)   $row['is_built_in'];
+        $obj->supportsLogo  = (bool)   $row['supports_logo'];
+        $obj->supportsColors = (bool)  $row['supports_colors'];
+        $obj->createdAt     = (string) $row['created_at'];
+        $obj->updatedAt     = (string) $row['updated_at'];
+
+        return $obj;
     }
 
     /**
-     * Check if this template supports colour injection.
-     * True means the HTML contains {{PRIMARY_COLOR}}.
+     * Return a human-readable label for the template's category.
+     * Used in view badges.
      */
-    public function supportsColors(): bool
+    public function categoryLabel(): string
     {
-        return (bool)$this->supports_colors;
+        return match ($this->category) {
+            'newsletter'    => 'Newsletter',
+            'transactional' => 'Transactional',
+            'promotional'   => 'Promotional',
+            default         => ucfirst($this->category),
+        };
     }
 
     /**
-     * Check if this is a built-in template (shipped with the app).
-     * Built-in templates cannot be deleted — only duplicated.
+     * Return a CSS colour class for the category badge.
+     * Used in _template-card.php.
      */
-    public function isBuiltIn(): bool
+    public function categoryBadgeClass(): string
     {
-        return (bool)$this->is_built_in;
+        return match ($this->category) {
+            'newsletter'    => 'bg-blue-100 text-blue-700',
+            'transactional' => 'bg-green-100 text-green-700',
+            'promotional'   => 'bg-purple-100 text-purple-700',
+            default         => 'bg-slate-100 text-slate-600',
+        };
     }
 }

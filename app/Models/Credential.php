@@ -65,4 +65,18 @@ class Credential extends Model
     {
         return (bool)$this->is_active;
     }
+
+    /**
+     * Return a masked version of the most sensitive config field.
+     * Used in the credentials form to show "••••••••" for saved credentials
+     * without exposing any real characters.
+     *
+     * @param string $field  Config key to mask — e.g. 'api_key', 'password'
+     * @return string        '••••••••' if the field exists and is non-empty, '' otherwise
+     */
+    public function maskField(string $field): string
+    {
+        $config = $this->decryptedConfig();
+        return isset($config[$field]) && $config[$field] !== '' ? '••••••••' : '';
+    }
 }

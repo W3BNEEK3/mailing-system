@@ -191,7 +191,7 @@ class Router
             );
         }
 
-        $controller = new $controllerClass();
+        $controller = App::getInstance()->make($controllerClass);
 
         // Verify the method exists on the controller
         if (!method_exists($controller, $method)) {
@@ -205,12 +205,20 @@ class Router
         // We need to resolve those names to actual middleware class instances.
         $middlewareStack = $this->resolveMiddleware($route['middleware']);
 
-        // The final "next" callable at the center of the pipeline
-        // is the actual controller method call.
         $core = function (Request $request) use ($controller, $method, $params): Response {
+            // Use Reflection to cast string URI params to the method's declared types
+            // to prevent TypeErrors in controllers that use strict_types=1.
+            $reflector = new \ReflectionMethod($controller, $method);
+            foreach ($reflector->getParameters() as $param) {
+                $name = $param->getName();
+                if (isset($params[$name]) && $param->hasType()) {
+                    if ($param->getType()->getName() === 'int') {
+                        $params[$name] = (int) $params[$name];
+                    }
+                }
+            }
+
             // Call the controller method.
-            // We pass $request first, then any route params (like $id).
-            // PHP named arguments allow the router params to match method param names.
             return $controller->$method($request, ...$params);
         };
 

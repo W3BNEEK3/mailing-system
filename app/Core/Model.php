@@ -90,7 +90,7 @@ abstract class Model
     /**
      * Get the PDO connection.
      */
-    protected static function db(): \PDO
+    public static function db(): \PDO
     {
         return Database::getInstance()->getConnection();
     }

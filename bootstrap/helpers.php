@@ -300,3 +300,41 @@ function setting(string $key, mixed $default = null): mixed
 
     return $default;
 }
+
+/**
+ * Render a component view and return the HTML.
+ *
+ * Usage in a view:
+ *   <?= component('forms/_input', [
+ *       'name'  => 'email',
+ *       'label' => 'Email Address',
+ *       'type'  => 'email',
+ *       'value' => $settings['sender_email'] ?? '',
+ *   ]) ?>
+ *
+ * @param string $path   Path relative to resources/components/ (without .php)
+ * @param array  $data   Variables to make available in the component
+ * @return string        The rendered HTML of the component
+ */
+function component(string $path, array $data = []): string
+{
+    $file = BASE_PATH . '/resources/components/' . ltrim($path, '/') . '.php';
+
+    if (!file_exists($file)) {
+        throw new \RuntimeException("Component not found: {$file}");
+    }
+
+    extract($data, EXTR_SKIP);
+
+    ob_start();
+    require $file;
+    return ob_get_clean();
+}
+
+/**
+ * Get the public URL for a stored file.
+ */
+function storageUrl(string $relative): string
+{
+    return \App\Helpers\Url::storageUrl($relative);
+}

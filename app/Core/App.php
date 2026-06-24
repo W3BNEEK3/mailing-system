@@ -94,7 +94,8 @@ class App
      *   1. Pre-made instances (registered with instance())
      *   2. Singleton bindings (cached after first call)
      *   3. Regular bindings (fresh call each time)
-     *   4. RuntimeException if nothing is registered
+     *   4. Autowiring fallback (if the class exists)
+     *   5. RuntimeException if nothing is registered/found
      */
     public function make(string $abstract): mixed
     {
@@ -117,11 +118,74 @@ class App
             return ($this->bindings[$abstract])($this);
         }
 
-        // 4. Nothing registered
+        // 4. Autowiring fallback (if the class exists)
+        if (class_exists($abstract)) {
+            return $this->resolve($abstract);
+        }
+
+        // 5. Nothing registered
         throw new \RuntimeException(
             "No binding found for [{$abstract}]. " .
             "Register it in bootstrap/app.php using singleton(), bind(), or instance()."
         );
+    }
+
+    /**
+     * Resolve a class using reflection (autowiring).
+     */
+    private function resolve(string $class): mixed
+    {
+        $reflector = new \ReflectionClass($class);
+
+        if (!$reflector->isInstantiable()) {
+            throw new \RuntimeException("Class [{$class}] is not instantiable.");
+        }
+
+        $constructor = $reflector->getConstructor();
+
+        if ($constructor === null) {
+            return new $class();
+        }
+
+        $parameters = $constructor->getParameters();
+        $dependencies = [];
+
+        foreach ($parameters as $parameter) {
+            $type = $parameter->getType();
+
+            if ($type === null) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    $dependencies[] = $parameter->getDefaultValue();
+                    continue;
+                }
+                throw new \RuntimeException(
+                    "Cannot resolve constructor parameter [{$parameter->getName()}] for [{$class}] (missing type-hint and no default value)."
+                );
+            }
+
+            if ($type instanceof \ReflectionUnionType || $type instanceof \ReflectionIntersectionType) {
+                throw new \RuntimeException(
+                    "Cannot resolve union or intersection type-hint for parameter [{$parameter->getName()}] in [{$class}]."
+                );
+            }
+
+            if ($type->isBuiltin()) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    $dependencies[] = $parameter->getDefaultValue();
+                    continue;
+                }
+                throw new \RuntimeException(
+                    "Cannot resolve built-in parameter [{$parameter->getName()}] for [{$class}] (no default value)."
+                );
+            }
+
+            $paramClass = $type->getName();
+
+            // Try to resolve the dependency recursively
+            $dependencies[] = $this->make($paramClass);
+        }
+
+        return $reflector->newInstanceArgs($dependencies);
     }
 
     // ─── Global access ────────────────────────────────────────────────────
