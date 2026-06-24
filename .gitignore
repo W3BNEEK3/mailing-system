@@ -5,4 +5,5 @@
 /storage/cache/
 /.env
 node_modules/
+/docs/
 *.DS_Store
