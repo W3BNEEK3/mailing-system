@@ -128,6 +128,18 @@ class RecipientRepository implements RecipientRepositoryInterface
         return $recipient->update(['is_suppressed' => 1]);
     }
 
+
+    /*
+     * Restore a suppressed recipient (un-suppress them).
+     * After calling this, the recipient is eligible to receive emails again.
+     */
+    public function unsuppress(int $id): bool
+    {
+        $recipient = Recipient::find($id);
+        return $recipient ? $recipient->update(['is_suppressed' => 0]) : false;
+    }
+
+
     // ─── Standard CRUD ────────────────────────────────────────────────────
 
     public function find(int $id): ?object
@@ -185,5 +197,69 @@ class RecipientRepository implements RecipientRepositoryInterface
         }
 
         return Recipient::paginate($perPage, $page, ['is_suppressed' => 0]);
+    }
+
+   
+    /*
+     * Find a recipient group by name, or create it if it does not exist.
+     *
+     * Used by CsvImportService when processing the 'tags' column.
+     * If a tag called 'Clients' is found in the CSV but the group does not
+     * exist in the DB, it is created here.
+     *
+     * @param string $name  Group name, e.g. 'Clients'
+     * @return RecipientGroup
+     */
+    public function findOrCreateGroup(string $name): RecipientGroup
+    {
+        $name  = trim($name);
+        $group = RecipientGroup::findBy('name', $name);
+
+        if ($group) {
+            return $group;
+        }
+
+        return RecipientGroup::create(['name' => $name]);
+    }
+
+    /*
+     * Add a recipient to a group via the pivot table.
+     * Does nothing if the pivot row already exists (INSERT IGNORE).
+     *
+     * @param int $recipientId
+     * @param int $groupId
+     */
+    public function addToGroup(int $recipientId, int $groupId): void
+    {
+        $pdo  = Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare(
+            'INSERT IGNORE INTO recipient_group_pivot (recipient_id, group_id) VALUES (?, ?)'
+        );
+        $stmt->execute([$recipientId, $groupId]);
+    }
+
+    /*
+     * Get all groups a recipient belongs to.
+     * Returns an array of RecipientGroup objects.
+     */
+    public function groupsForRecipient(int $recipientId): array
+    {
+        return RecipientGroup::raw(
+            'SELECT rg.*
+             FROM recipient_groups rg
+             INNER JOIN recipient_group_pivot p ON p.group_id = rg.id
+             WHERE p.recipient_id = ?
+             ORDER BY rg.name ASC',
+            [$recipientId]
+        );
+    }
+
+    /*
+     * Get all recipient groups in the system.
+     * Used to populate tag dropdowns.
+     */
+    public function allGroups(): array
+    {
+        return RecipientGroup::all('name', 'ASC');
     }
 }

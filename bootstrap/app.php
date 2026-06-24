@@ -91,6 +91,14 @@ $app->singleton(\App\Services\TemplateRenderService::class, fn() =>
     )
 );
 
+$app->singleton(
+    \App\Services\CsvImportService::class,
+    fn() => new \App\Services\CsvImportService(
+        recipients: $app->make(\App\Repositories\RecipientRepository::class),
+    )
+);
+
+
 
 // ── 5. Register ErrorHandler and activate it ───────────────────────────────
 $debug  = filter_var($_ENV['APP_DEBUG'] ?? 'false', FILTER_VALIDATE_BOOLEAN);

@@ -52,4 +52,24 @@ class Recipient extends Model
     {
         return (bool)$this->is_suppressed;
     }
+
+
+    /*
+     * Build a static factory from a PDO row array.
+     * Used by RecipientRepository to hydrate query results.
+     */
+    public static function fromArray(array $row): static
+    {
+        $obj                = new static();
+        $obj->id            = (int)    ($row['id']           ?? 0);
+        $obj->first_name    = (string) ($row['first_name']   ?? '');
+        $obj->last_name     = (string) ($row['last_name']    ?? '');
+        $obj->email         = (string) ($row['email']        ?? '');
+        $obj->company       = (string) ($row['company']      ?? '');
+        $obj->notes         = (string) ($row['notes']        ?? '');
+        $obj->is_suppressed = (bool)   ($row['is_suppressed'] ?? false);
+        $obj->created_at    = (string) ($row['created_at']   ?? '');
+
+        return $obj;
+    }
 }

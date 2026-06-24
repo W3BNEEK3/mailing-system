@@ -48,6 +48,17 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get ('/settings/credentials',         [\App\Controllers\CredentialController::class, 'index']);
     $router->post('/settings/credentials',         [\App\Controllers\CredentialController::class, 'store']);
 
+
+    $router->get ('/recipients',                   [\App\Controllers\RecipientController::class, 'index']);
+    $router->get ('/recipients/create',            [\App\Controllers\RecipientController::class, 'create']);
+    $router->post('/recipients',                   [\App\Controllers\RecipientController::class, 'store']);
+    $router->get ('/recipients/import',            [\App\Controllers\RecipientController::class, 'importPage']);
+    $router->post('/recipients/import',            [\App\Controllers\RecipientController::class, 'import']);
+    $router->get ('/recipients/{id}/edit',         [\App\Controllers\RecipientController::class, 'edit']);
+    $router->post('/recipients/{id}',              [\App\Controllers\RecipientController::class, 'update']);
+    $router->post('/recipients/{id}/delete',       [\App\Controllers\RecipientController::class, 'destroy']);
+    $router->post('/recipients/{id}/suppress',     [\App\Controllers\RecipientController::class, 'suppress']);
+    $router->post('/recipients/{id}/unsuppress',   [\App\Controllers\RecipientController::class, 'unsuppress']);
     /*
      * ── Routes registered for future phases ──────────────────────────────
      * These are declared here (commented in) early so the Router knows
