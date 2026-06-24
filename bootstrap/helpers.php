@@ -145,45 +145,52 @@ function session(): Session
 
 /**
  * Get a previously flashed input value (for repopulating forms after validation errors).
- *
- * Usage in views:
- *   <input value="<?= e(old('email')) ?>">
  */
 function old(string $key, mixed $default = ''): mixed
 {
-    $oldInput = session()->getFlash('_old_input') ?? [];
+    $oldInput = session()->getFlash('old') ?? [];
 
-    // getFlash deletes the value after reading, but we might call old() multiple times.
-    // Re-flash if there's still data to preserve for the current render.
     if (!empty($oldInput)) {
-        session()->flash('_old_input', $oldInput);
+        session()->flash('old', $oldInput);
     }
 
-    return $oldInput[$key] ?? $default;
+    return isset($oldInput[$key]) ? e($oldInput[$key]) : $default;
 }
 
 /**
  * Get validation errors flashed to the session.
- *
- * Usage in views:
- *   errors()           => ['email' => 'Email is required', ...]  (all errors)
- *   errors('email')    => 'Email is required'                    (single field)
  */
-function errors(?string $key = null): array|string
+function errors(?string $key = null): array|string|null
 {
-    $allErrors = session()->getFlash('_errors') ?? [];
+    $allErrors = session()->getFlash('errors') ?? [];
 
-    // Re-flash so multiple calls to errors() within one render all work
     if (!empty($allErrors)) {
-        session()->flash('_errors', $allErrors);
+        session()->flash('errors', $allErrors);
     }
 
     if ($key !== null) {
-        return $allErrors[$key] ?? '';
+        return $allErrors[$key] ?? null;
     }
 
     return $allErrors;
 }
+
+/**
+ * Get a flash message from the session (one-time read).
+ */
+function flash(string $key, mixed $default = null): mixed
+{
+    return session()->getFlash($key, $default);
+}
+
+/**
+ * Get the current Request instance.
+ */
+function request(): \App\Core\Request
+{
+    return \App\Core\Request::capture();
+}
+
 
 // ─── Paths ────────────────────────────────────────────────────────────────
 

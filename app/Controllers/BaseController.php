@@ -110,13 +110,19 @@ abstract class BaseController
      *       return $this->withErrors($e, $request->all());
      *   }
      */
-    protected function withErrors(ValidationException $e, array $oldInput = []): Response
+    protected function withErrors(ValidationException $e, ?array $oldInput = null): Response
     {
-        // Flash the errors so they survive the redirect
-        session()->flash('_errors', $e->errors());
+        // Flash the errors array so errors() helper can read it on next request
+        session()->flash('errors', $e->errors());
 
-        // Flash the old input so forms can be re-populated
-        session()->flash('_old_input', $oldInput);
+        // Flash the old input so old() helper can repopulate form fields
+        // We omit sensitive fields like 'password' to avoid storing them in session
+        $input = $oldInput ?? array_diff_key(
+            request()->all(),
+            array_flip(['password', 'password_confirmation', '_csrf', '_method'])
+        );
+
+        session()->flash('old', $input);
 
         return $this->back();
     }

@@ -38,12 +38,12 @@ $router->group(['middleware' => ['guest']], function ($router) {
     $router->post('/login', [AuthController::class, 'login']);
 });
 
-// ── Logout (any authenticated user can log out) ────────────────────────────
-$router->post('/logout', [AuthController::class, 'logout']);
-
 // ── Authenticated routes ───────────────────────────────────────────────────
 $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     
+    // ── Logout (any authenticated user can log out) ────────────────────────────
+    $router->post('/logout', [AuthController::class, 'logout']);
+
     // Root redirect to compose
     $router->get('/', [ComposeController::class, 'index']);
 
