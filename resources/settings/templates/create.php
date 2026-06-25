@@ -192,18 +192,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const ta = document.getElementById('html_content');
     if (!ta) return;
 
-    const editor = CodeMirror.fromTextArea(ta, {
-        mode: "htmlmixed",
-        lineNumbers: true,
-        lineWrapping: true,
-        theme: "default"
-    });
+    tinymce.init({
+        selector: '#html_content',
+        height: 600,
+        menubar: false,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | tokens | code | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 15px; }',
+        setup: function(editor) {
+            editor.ui.registry.addMenuButton('tokens', {
+                text: 'Tokens',
+                fetch: function (callback) {
+                    var items = [
+                        { type: 'menuitem', text: 'Logo URL ({{LOGO_URL}})', onAction: function () { editor.insertContent('{{LOGO_URL}}'); } },
+                        { type: 'menuitem', text: 'Primary Color ({{PRIMARY_COLOR}})', onAction: function () { editor.insertContent('{{PRIMARY_COLOR}}'); } },
+                        { type: 'menuitem', text: 'Secondary Color ({{SECONDARY_COLOR}})', onAction: function () { editor.insertContent('{{SECONDARY_COLOR}}'); } },
+                        { type: 'menuitem', text: 'Sender Name ({{SENDER_NAME}})', onAction: function () { editor.insertContent('{{SENDER_NAME}}'); } },
+                        { type: 'menuitem', text: 'Sender Email ({{SENDER_EMAIL}})', onAction: function () { editor.insertContent('{{SENDER_EMAIL}}'); } },
+                    ];
+                    callback(items);
+                }
+            });
 
-    editor.on('change', function() {
-        editor.save();
-        // Trigger the htmx keyup event manually since typing happens in CM
-        if (window.htmx) {
-            htmx.trigger(ta, 'keyup');
+            editor.on('change keyup paste', function() {
+                editor.save();
+                if (window.htmx) htmx.trigger(ta, 'keyup');
+            });
         }
     });
 
@@ -221,9 +242,6 @@ document.addEventListener('DOMContentLoaded', function() {
             pasteBtn.classList.remove('bg-white', 'text-slate-600');
             uploadBtn.classList.remove('bg-slate-800', 'text-white');
             uploadBtn.classList.add('bg-white', 'text-slate-600');
-            
-            // Refresh CM to fix display issues if initialized while hidden
-            setTimeout(() => editor.refresh(), 10);
         } else {
             pastePanel.classList.add('hidden');
             uploadPanel.classList.remove('hidden');
