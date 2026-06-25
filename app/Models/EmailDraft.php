@@ -13,8 +13,8 @@ use App\Core\Model;
  * Drafts are auto-saved every 60 seconds and manually saved via "Save Draft".
  *
  * Usage:
- *   $draft      = EmailDraft::find(5);
- *   $recipients = $draft->recipientsArray(); // ['alice@example.com', 'Clients']
+ * $draft      = EmailDraft::find(5);
+ * $recipients = $draft->recipientsArray(); // ['alice@example.com', 'Clients']
  */
 class EmailDraft extends Model
 {
@@ -103,15 +103,6 @@ class EmailDraft extends Model
     }
 
     /**
-     * Return a display label for the draft list.
-     * Falls back to "No Subject" if subject is empty.
-     */
-    public function displaySubject(): string
-    {
-        return $this->subject !== '' ? $this->subject : 'No Subject';
-    }
-
-    /**
      * Return a human-readable "last saved" time string.
      * e.g. "Saved 3 minutes ago"
      */
@@ -124,6 +115,7 @@ class EmailDraft extends Model
         if ($seconds < 86400) return 'Saved ' . floor($seconds / 3600) . 'h ago';
         return 'Saved ' . date('d M', strtotime($this->updatedAt));
     }
+    
     /**
      * Get a short display label for the draft (used in the draft list).
      * Falls back to "(No Subject)" if the subject is empty.

@@ -66,6 +66,8 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->post('/compose/preview', [\App\Controllers\ComposeController::class, 'preview']);
     $router->post('/compose/load-template', [\App\Controllers\ComposeController::class, 'loadTemplate']);
     $router->get ('/compose/recipient-hints', [\App\Controllers\ComposeController::class, 'recipientHints']);
+    $router->post('/compose/translate', [\App\Controllers\TranslationController::class, 'translate']);
+    $router->post('/compose/translate/revert', [\App\Controllers\TranslationController::class, 'revert']);
 
     // ── Drafts ────────────────────────────────────────────────────────────────────
 

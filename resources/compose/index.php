@@ -38,13 +38,13 @@ $flashToast = session()->getFlash('_toast');
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <?= component('compose/_toolbar', ['templates' => $templates, 'globalContext' => $globalContext, 'draft' => $draft]) ?>
             
-            <div class="divide-y divide-slate-100">
+           <div class="divide-y divide-slate-100">
                 <?= component('compose/_metadata', ['draft' => $draft]) ?>
                 <div id="compose-area">
                     <?= component('compose/_editor', ['bodyHtml' => $draft?->bodyHtml ?? '', 'templateId' => $draft?->templateId ?? null]) ?>
                 </div>
+                <div id="translation-controls"></div>
             </div>
-
             <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 gap-4">
                 
                 <div class="order-2 sm:order-1 text-center sm:text-left">
@@ -59,7 +59,7 @@ $flashToast = session()->getFlash('_toast');
                         <i class="bi bi-floppy"></i> Save Draft
                     </button>
 
-                    <button type="button" hx-post="/compose/preview" hx-include="#compose-form" hx-target="#preview-modal-body" hx-swap="innerHTML" hx-on::after-request="openPreviewModal(event)"
+                    <button type="button" hx-post="/compose/preview" hx-include="#compose-form" hx-target="#preview-modal-body" hx-swap="innerHTML"
                         class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
                         <i class="bi bi-eye"></i> Preview
                     </button>
@@ -92,17 +92,22 @@ $flashToast = session()->getFlash('_toast');
         document.getElementById('draft-id-input').value = '';
     });
 
-    function openPreviewModal(event) {
-        if (!event.detail.successful) return;
-        var overlay = document.getElementById('compose-preview-overlay');
-        var iframe = document.getElementById('compose-preview-iframe');
-        if (overlay && iframe) {
-            iframe.srcdoc = event.detail.xhr.responseText;
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+    // FIXED: Bulletproof global listener to catch the preview request and open the iframe
+    document.body.addEventListener('htmx:afterRequest', function (event) {
+        var elt = event.detail.elt;
+        if (elt && elt.getAttribute('hx-post') === '/compose/preview') {
+            if (event.detail.successful) {
+                var overlay = document.getElementById('compose-preview-overlay');
+                var iframe = document.getElementById('compose-preview-iframe');
+                if (overlay && iframe) {
+                    iframe.srcdoc = event.detail.xhr.responseText;
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
         }
-    }
+    });
 
     function closePreviewModal() {
         var overlay = document.getElementById('compose-preview-overlay');

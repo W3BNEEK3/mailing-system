@@ -22,5 +22,6 @@ return [
         'yo' => 'Yoruba',
         'ha' => 'Hausa',
         'ig' => 'Igbo',
+        'hi' => 'Hindi',
     ],
 ];
