@@ -129,7 +129,11 @@ $flashToast = session()->getFlash('_toast');
 
     function populateSendSummary() {
         var subject = document.getElementById('subject-input')?.value || '(No subject)';
-        var recipients = JSON.parse(document.getElementById('recipients-hidden')?.value || '[]');
+        // Read .value property (not attribute) — set by chip input JS
+        var hiddenInput = document.getElementById('recipients-hidden');
+        var recipients = [];
+        try { recipients = JSON.parse(hiddenInput?.value || '[]'); } catch (e) {}
+        if (!Array.isArray(recipients)) recipients = [];
         var summary = document.getElementById('send-summary');
         if (summary) {
             summary.innerHTML = '<div class="text-sm text-slate-600 space-y-1">'

@@ -274,7 +274,12 @@ function initChipInput(container) {
 
     if (!hiddenInput) return;
 
+    // ── Seed from existing value (draft recipients, etc.) ───────────────
     var chips = [];
+    try {
+        var existing = JSON.parse(hiddenInput.value || '[]');
+        if (Array.isArray(existing)) chips = existing;
+    } catch (e) { chips = []; }
 
     // ── Text input where the user types ─────────────────────────────────
     var input = document.createElement('input');
@@ -284,6 +289,9 @@ function initChipInput(container) {
     input.setAttribute('aria-label', 'Add recipient');
 
     container.appendChild(input);
+
+    // Render any pre-seeded chips (from draft)
+    chips.forEach(function (v) { renderChip(v); });
 
     // ── Add a chip ───────────────────────────────────────────────────────
     function addChip(value) {
@@ -296,6 +304,9 @@ function initChipInput(container) {
         input.value = '';
     }
 
+    // Make addChip accessible from autocomplete dropdown clicks
+    container._addChip = addChip;
+
     // ── Remove a chip ────────────────────────────────────────────────────
     function removeChip(value) {
         chips = chips.filter(function (c) {
@@ -304,10 +315,21 @@ function initChipInput(container) {
         updateHidden();
     }
 
-    // ── Sync chips array to the hidden input ─────────────────────────────
+    // ── Sync chips array to the hidden input + notify listeners ──────────
     function updateHidden() {
         hiddenInput.value = JSON.stringify(chips);
+        // Dispatch custom event so badge and send modal stay in sync.
+        // MutationObserver does NOT fire on .value = ... property assignments,
+        // so we use a custom event instead.
+        document.dispatchEvent(new CustomEvent('recipientsUpdated', {
+            detail: { chips: chips, count: chips.length }
+        }));
     }
+
+    // Notify on init so badge reflects any pre-seeded chips
+    document.dispatchEvent(new CustomEvent('recipientsUpdated', {
+        detail: { chips: chips, count: chips.length }
+    }));
 
     // ── Render a chip element ────────────────────────────────────────────
     function renderChip(value) {

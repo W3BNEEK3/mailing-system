@@ -119,8 +119,8 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     // ... (draft routes, translation routes)
 
     // Phase 10 — Logs
-    // $router->get('/logs/{id}',   [LogController::class, 'show']);
-    // $router->post('/logs/clear', [LogController::class, 'clear']);
+    $router->get ('/logs/{id}',   [LogController::class, 'show']);
+    $router->post('/logs/clear',  [LogController::class, 'clear']);
 });
 
 // ── Webhook routes (no auth — validated by signature) ─────────────────────

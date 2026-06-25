@@ -52,21 +52,28 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 
 <script>
 (function () {
-    var hiddenInput = document.getElementById('recipients-hidden');
-    var badge       = document.getElementById('recipient-count-badge');
-    if (!hiddenInput || !badge) return;
+    var badge = document.getElementById('recipient-count-badge');
+    if (!badge) return;
 
-    function updateBadge() {
-        try {
-            var list  = JSON.parse(hiddenInput.value || '[]');
-            var count = Array.isArray(list) ? list.length : 0;
-            badge.textContent = count + ' recipient' + (count !== 1 ? 's' : '');
-        } catch (e) {
-            badge.textContent = '0 recipients';
-        }
+    function updateBadge(count) {
+        badge.textContent = count + ' recipient' + (count !== 1 ? 's' : '');
     }
 
-    new MutationObserver(updateBadge).observe(hiddenInput, { attributes: true, attributeFilter: ['value'] });
-    updateBadge();
+    // MutationObserver on attribute changes does NOT fire when JS sets
+    // hiddenInput.value directly (property assignment vs. setAttribute).
+    // Instead, listen for the custom 'recipientsUpdated' event fired by
+    // the chip input system in app.js whenever the list changes.
+    document.addEventListener('recipientsUpdated', function (e) {
+        updateBadge(e.detail ? e.detail.count : 0);
+    });
+
+    // Initial state (in case the event already fired before this script ran)
+    try {
+        var hiddenInput = document.getElementById('recipients-hidden');
+        var list = JSON.parse((hiddenInput && hiddenInput.value) || '[]');
+        updateBadge(Array.isArray(list) ? list.length : 0);
+    } catch (e) {
+        updateBadge(0);
+    }
 })();
 </script>

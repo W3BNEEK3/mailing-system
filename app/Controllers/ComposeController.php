@@ -169,10 +169,10 @@ class ComposeController extends BaseController
         $templateId = (int) ($request->post('template_id') ?? 0);
 
         if ($templateId === 0) {
-            return $this->partial('compose/_editor', [
+            return Response::html(component('compose/_editor', [
                 'bodyHtml'   => '',
                 'templateId' => null,
-            ]);
+            ]));
         }
 
         $template = $this->templates->findById($templateId);
@@ -184,10 +184,10 @@ class ComposeController extends BaseController
         // FIXED: Reading the exact database column 'html_content'
         $html = $template->html_content ?? $template->htmlContent ?? '';
 
-        return $this->partial('compose/_editor', [
+        return Response::html(component('compose/_editor', [
             'bodyHtml'   => $html,
             'templateId' => $template->id,
-        ]);
+        ]));
     }
     public function recipientHints(Request $request): Response
     {
