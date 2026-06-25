@@ -89,14 +89,14 @@ class ComposeController extends BaseController
         $templateId = isset($post['template_id']) && $post['template_id'] !== '' ? (int) $post['template_id'] : null;
 
         $payload = new EmailPayload(
-            fromName:   $globalCtx->senderName,
-            fromEmail:  $globalCtx->senderEmail,
-            recipients: $resolved->emails,
-            subject:    $subject,
-            html:       $renderedHtml,
-            replyTo:    $replyTo,
-            cc:         is_array($rawCc)  ? $rawCc  : [],
-            bcc:        is_array($rawBcc) ? $rawBcc : [],
+            senderName:  $globalCtx->senderName,
+            senderEmail: $globalCtx->senderEmail,
+            recipients:  $resolved->emails,
+            subject:     $subject,
+            html:        $renderedHtml,
+            replyTo:     $replyTo,
+            cc:          is_array($rawCc)  ? $rawCc  : [],
+            bcc:         is_array($rawBcc) ? $rawBcc : [],
         );
 
         $providerName = 'unknown';
@@ -198,7 +198,7 @@ class ComposeController extends BaseController
     public function recipientHints(Request $request): Response
     {
         $query = trim($request->get('q', ''));
-        
+
         if ($query === '') {
             $contacts = $this->resolver->searchContacts('');
             $groups = $this->resolver->allGroups();
@@ -215,7 +215,15 @@ class ComposeController extends BaseController
             $suggestions[] = ['type' => 'group', 'value' => $group, 'label' => '🏷 ' . $group . ' (group)'];
         }
 
-        // Return up to 8 suggestions
-        return $this->partial('compose/_autocomplete-dropdown', ['suggestions' => array_slice($suggestions, 0, 8)]);
+        $suggestions = array_slice($suggestions, 0, 8);
+
+        // Return JSON when the client requests it (our chip-input JS does this).
+        // Fall back to the HTML partial for any legacy HTMX callers.
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        if (str_contains($accept, 'application/json')) {
+            return Response::json(['suggestions' => $suggestions]);
+        }
+
+        return $this->partial('compose/_autocomplete-dropdown', ['suggestions' => $suggestions]);
     }
 }

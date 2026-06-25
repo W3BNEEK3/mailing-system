@@ -87,7 +87,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
      */
 
     // Phase 4 — General Settings
-    // $router->post('/settings/general', [SettingsController::class, 'update']);
+    $router->post('/settings/general', [SettingsController::class, 'update']);
 
     // Phase 5 — Templates CRUD
     // $router->get('/settings/templates/create',          [TemplateController::class, 'create']);

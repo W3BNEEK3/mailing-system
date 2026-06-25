@@ -1,49 +1,81 @@
 <?php
-$draftRecipients = $draft ? json_encode($draft->recipientsArray()) : '[]';
-$draftSubject    = $draft?->subject   ?? '';
-$draftReplyTo    = $draft?->replyTo   ?? '';
-$draftCc         = $draft ? json_encode($draft->ccArray())  : '[]';
-$draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
+/*
+ * _metadata.php — Compose form fields (To, Subject, Reply-To)
+ *
+ * Recipients: plain textarea, one email per line or comma-separated.
+ * On submit, a tiny inline script converts the textarea text into the
+ * JSON array that ComposeController::send() expects via `name="recipients"`.
+ *
+ * No chip library. No HTMX autocomplete. No hidden inputs. Just works.
+ */
+
+// Convert stored JSON array back to plain text for the textarea (draft reload)
+$draftRecipientsRaw = $draft ? $draft->recipientsArray() : [];
+$draftRecipientsText = implode(', ', $draftRecipientsRaw);
+
+$draftSubject = $draft?->subject  ?? '';
+$draftReplyTo = $draft?->replyTo  ?? '';
 ?>
 
 <div class="px-6 py-4 space-y-4">
 
-    <!-- To (chip input) -->
-    <div class="relative">
-        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+    <!-- To -->
+    <div>
+        <label for="recipients-textarea"
+               class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
             To
         </label>
+        <p class="text-xs text-slate-400 mb-1.5">
+            One email per line, or separate with commas.
+        </p>
 
-        <input type="hidden" id="recipients-hidden" name="recipients" value="<?= e($draftRecipients) ?>">
+        <!--
+            This textarea is NOT submitted directly.
+            The hidden input #recipients-hidden (name="recipients") holds the
+            JSON array that the controller reads. The script below converts
+            the textarea value → JSON whenever the form is about to be submitted.
+        -->
+        <textarea
+            id="recipients-textarea"
+            rows="2"
+            placeholder="alice@example.com, bob@example.com"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm
+                   text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500
+                   resize-none"
+        ><?= e($draftRecipientsText) ?></textarea>
 
-        <div id="recipient-chips" data-chip-input data-hidden-name="recipients"
-             class="flex flex-wrap items-center gap-1.5 min-h-[42px] px-3 py-1.5 rounded-xl border border-slate-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all cursor-text">
-        </div>
-
-        <div id="recipient-autocomplete" class="absolute left-0 right-0 top-full mt-1 z-50"></div>
+        <!-- The actual submitted field — kept in sync by the script below -->
+        <input type="hidden" id="recipients-hidden" name="recipients" value="<?= e(json_encode($draftRecipientsRaw)) ?>">
     </div>
 
-    <!-- FIXED: Restored classic outlined input and label for Subject -->
+    <!-- Subject -->
     <div>
-        <label for="subject-input" class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+        <label for="subject-input"
+               class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
             Subject
         </label>
-        <input type="text" id="subject-input" name="subject" value="<?= e($draftSubject) ?>"
-               placeholder="Enter Email Subject"
-               class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="subject-input" name="subject"
+               value="<?= e($draftSubject) ?>"
+               placeholder="Enter email subject"
+               class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2
+                      text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <!-- Extra fields toggle -->
+    <!-- CC / BCC / Reply-To toggle -->
     <div>
-        <button type="button" onclick="document.getElementById('advanced-meta').classList.toggle('hidden')" class="text-xs font-medium text-blue-600 hover:text-blue-800 transition">
+        <button type="button"
+                onclick="document.getElementById('advanced-meta').classList.toggle('hidden')"
+                class="text-xs font-medium text-blue-600 hover:text-blue-800 transition">
             + Add CC / BCC / Reply-To
         </button>
 
         <div id="advanced-meta" class="hidden mt-4 space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
             <div>
                 <label class="block text-xs font-medium text-slate-500 mb-1">Reply-To (optional)</label>
-                <input type="email" name="reply_to" value="<?= e($draftReplyTo) ?>" placeholder="reply@domain.com"
-                       class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="email" name="reply_to" value="<?= e($draftReplyTo) ?>"
+                       placeholder="reply@domain.com"
+                       class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2
+                              text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
         </div>
     </div>
@@ -52,28 +84,39 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 
 <script>
 (function () {
-    var badge = document.getElementById('recipient-count-badge');
-    if (!badge) return;
+    var textarea = document.getElementById('recipients-textarea');
+    var hidden   = document.getElementById('recipients-hidden');
+    var badge    = document.getElementById('recipient-count-badge');
 
-    function updateBadge(count) {
-        badge.textContent = count + ' recipient' + (count !== 1 ? 's' : '');
+    if (!textarea || !hidden) return;
+
+    /* Parse the textarea text into a clean array of email strings. */
+    function parseEmails() {
+        return textarea.value
+            .split(/[\n,;]+/)
+            .map(function (s) { return s.trim(); })
+            .filter(function (s) { return s.length > 0; });
     }
 
-    // MutationObserver on attribute changes does NOT fire when JS sets
-    // hiddenInput.value directly (property assignment vs. setAttribute).
-    // Instead, listen for the custom 'recipientsUpdated' event fired by
-    // the chip input system in app.js whenever the list changes.
-    document.addEventListener('recipientsUpdated', function (e) {
-        updateBadge(e.detail ? e.detail.count : 0);
-    });
+    /* Push the array into the hidden input and update the toolbar badge. */
+    function sync() {
+        var emails = parseEmails();
+        hidden.value = JSON.stringify(emails);
 
-    // Initial state (in case the event already fired before this script ran)
-    try {
-        var hiddenInput = document.getElementById('recipients-hidden');
-        var list = JSON.parse((hiddenInput && hiddenInput.value) || '[]');
-        updateBadge(Array.isArray(list) ? list.length : 0);
-    } catch (e) {
-        updateBadge(0);
+        if (badge) {
+            badge.textContent = emails.length + ' recipient' + (emails.length !== 1 ? 's' : '');
+        }
+
+        /* Keep populateSendSummary() in sync when the send modal opens */
+        document.dispatchEvent(new CustomEvent('recipientsUpdated', {
+            detail: { chips: emails, count: emails.length }
+        }));
     }
+
+    /* Sync on every keystroke so the badge and send-modal are always current. */
+    textarea.addEventListener('input', sync);
+
+    /* Sync once immediately on load (covers draft reloads). */
+    sync();
 })();
 </script>

@@ -26,8 +26,19 @@ class ResendProvider implements EmailProviderInterface
 
         $ch = curl_init('https://api.resend.com/emails');
 
+        $senderEmail = trim($payload->senderEmail);
+        $senderName  = trim($payload->senderName);
+
+        if (empty($senderEmail)) {
+            throw new ProviderException(
+                'Sender email is not configured. Go to Settings and set a default sender email address.'
+            );
+        }
+
+        $from = $senderName !== '' ? "{$senderName} <{$senderEmail}>" : $senderEmail;
+
         $postData = [
-            'from'    => $payload->fromName ? "{$payload->fromName} <{$payload->fromEmail}>" : $payload->fromEmail,
+            'from'    => $from,
             'to'      => $payload->recipients,
             'subject' => $payload->subject,
             'html'    => $payload->html,
@@ -48,7 +59,6 @@ class ResendProvider implements EmailProviderInterface
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error    = curl_error($ch);
-        curl_close($ch);
 
         if ($response === false) {
             throw new ProviderException("cURL Error: " . $error);
@@ -80,7 +90,6 @@ class ResendProvider implements EmailProviderInterface
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         return $httpCode === 200;
     }

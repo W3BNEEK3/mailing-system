@@ -74,4 +74,26 @@ class CredentialService
         return false;
     }
     public function getForProvider(string $provider): ?Credential { $results = Credential::where(['provider' => $provider]); return !empty($results) ? $results[0] : null; }
+
+    /**
+     * Build and return a ready-to-use provider instance from the active credential.
+     * Returns null if no credential is active or the provider type is unknown.
+     */
+    public function buildActiveProvider(): ?\App\Providers\Contracts\EmailProviderInterface
+    {
+        $cred = $this->getActive();
+        if ($cred === null) return null;
+
+        $config = json_decode(Crypto::decrypt($cred->config), associative: true) ?: [];
+
+        if ($cred->provider === 'resend') {
+            return new ResendProvider($config['api_key'] ?? '');
+        }
+
+        if ($cred->provider === 'smtp') {
+            return new SmtpProvider($config);
+        }
+
+        return null;
+    }
 }
