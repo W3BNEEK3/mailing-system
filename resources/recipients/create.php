@@ -33,7 +33,7 @@ $fieldErrors = errors();
 
             <!-- Name row -->
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <?php include component('forms/_input', [
+                <?php component('forms/_input', [
                     'name'        => 'first_name',
                     'label'       => 'First Name',
                     'type'        => 'text',
@@ -43,7 +43,7 @@ $fieldErrors = errors();
                     'error'       => $fieldErrors['first_name'] ?? null,
                 ]); ?>
 
-                <?php include component('forms/_input', [
+                <?php component('forms/_input', [
                     'name'        => 'last_name',
                     'label'       => 'Last Name',
                     'type'        => 'text',
@@ -54,7 +54,7 @@ $fieldErrors = errors();
             </div>
 
             <!-- Email -->
-            <?php include component('forms/_input', [
+            <?php component('forms/_input', [
                 'name'        => 'email',
                 'label'       => 'Email Address',
                 'type'        => 'email',
@@ -65,7 +65,7 @@ $fieldErrors = errors();
             ]); ?>
 
             <!-- Company -->
-            <?php include component('forms/_input', [
+            <?php component('forms/_input', [
                 'name'        => 'company',
                 'label'       => 'Company (optional)',
                 'type'        => 'text',

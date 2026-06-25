@@ -1,18 +1,18 @@
 /**
- * assets/js/app.js
- * Emirates — Global Application Script
- *
- * Responsibilities:
- *   1. CSRF header injection into every HTMX request
- *   2. Toast notification system (triggered by HX-Trigger: showToast)
- *   3. Modal open/close (openModal / closeModal global functions)
- *   4. Recipient chip input initialisation
- *   5. Post-swap scroll restoration
- *   6. HTMX progress bar finalisation (reset after request completes)
- *
- * This file has no build step — it runs as-is in the browser.
- * It must work without any framework or bundler.
- */
+* assets/js/app.js
+* Emirates — Global Application Script
+*
+* Responsibilities:
+*   1. CSRF header injection into every HTMX request
+*   2. Toast notification system (triggered by HX-Trigger: showToast)
+*   3. Modal open/close (openModal / closeModal global functions)
+*   4. Recipient chip input initialisation
+*   5. Post-swap scroll restoration
+*   6. HTMX progress bar finalisation (reset after request completes)
+*
+* This file has no build step — it runs as-is in the browser.
+* It must work without any framework or bundler.
+*/
 
 'use strict';
 
@@ -61,11 +61,11 @@ document.addEventListener('showToast', function (event) {
 });
 
 /**
- * Show a toast notification.
- *
- * @param {'success'|'error'|'warning'|'info'} type
- * @param {string} message
- */
+* Show a toast notification.
+*
+* @param {'success'|'error'|'warning'|'info'} type
+* @param {string} message
+*/
 function showToast(type, message) {
     var container = document.getElementById('toast-container');
     if (!container) return;
@@ -73,22 +73,22 @@ function showToast(type, message) {
     // ── Style maps ──────────────────────────────────────────────────────
     var styles = {
         success: {
-            bg:   'bg-emerald-50 border-emerald-200',
+            bg: 'bg-emerald-50 border-emerald-200',
             text: 'text-emerald-800',
             icon: 'bi-check-circle-fill text-emerald-500',
         },
         error: {
-            bg:   'bg-red-50 border-red-200',
+            bg: 'bg-red-50 border-red-200',
             text: 'text-red-800',
             icon: 'bi-exclamation-circle-fill text-red-500',
         },
         warning: {
-            bg:   'bg-amber-50 border-amber-200',
+            bg: 'bg-amber-50 border-amber-200',
             text: 'text-amber-800',
             icon: 'bi-exclamation-triangle-fill text-amber-500',
         },
         info: {
-            bg:   'bg-blue-50 border-blue-200',
+            bg: 'bg-blue-50 border-blue-200',
             text: 'text-blue-800',
             icon: 'bi-info-circle-fill text-blue-500',
         },
@@ -102,7 +102,8 @@ function showToast(type, message) {
     toast.className = [
         'flex items-start gap-3 w-full rounded-xl border px-4 py-3',
         'shadow-sm toast-enter',
-        s.bg, s.text,
+        s.bg,
+        s.text,
     ].join(' ');
 
     toast.innerHTML = [
@@ -120,7 +121,7 @@ function showToast(type, message) {
     // ── Auto-dismiss ─────────────────────────────────────────────────────
     // Error toasts persist until the user dismisses them manually.
     // All other types auto-dismiss.
-    var autoDismissMs = type === 'error' ? null : (type === 'warning' ? 5000 : 4000);
+    var autoDismissMs = type === 'error' ? null: (type === 'warning' ? 5000: 4000);
 
     if (autoDismissMs !== null) {
         setTimeout(function () {
@@ -130,10 +131,10 @@ function showToast(type, message) {
 }
 
 /**
- * Animate a toast out and remove it from the DOM.
- *
- * @param {HTMLElement} toastEl
- */
+* Animate a toast out and remove it from the DOM.
+*
+* @param {HTMLElement} toastEl
+*/
 function dismissToast(toastEl) {
     if (!toastEl || !toastEl.parentElement) return;
 
@@ -145,7 +146,8 @@ function dismissToast(toastEl) {
         if (toastEl.parentElement) {
             toastEl.parentElement.removeChild(toastEl);
         }
-    }, 220);
+    },
+        220);
 }
 
 // Expose dismissToast globally so inline onclick handlers in toast HTML can call it
@@ -171,10 +173,10 @@ window.dismissToast = dismissToast;
    ─────────────────────────────────────────────────────────────────────── */
 
 /**
- * Open the global modal.
- *
- * @param {string} title  — Text shown in the modal header
- */
+* Open the global modal.
+*
+* @param {string} title  — Text shown in the modal header
+*/
 function openModal(title) {
     var overlay = document.getElementById('modal-overlay');
     var titleEl = document.getElementById('modal-title');
@@ -198,11 +200,11 @@ function openModal(title) {
 }
 
 /**
- * Close the global modal and clear its body content.
- */
+* Close the global modal and clear its body content.
+*/
 function closeModal() {
     var overlay = document.getElementById('modal-overlay');
-    var body    = document.getElementById('modal-body');
+    var body = document.getElementById('modal-body');
 
     if (!overlay) return;
 
@@ -222,7 +224,7 @@ function closeModal() {
 }
 
 // Expose globally so PHP views can call them from onclick attributes
-window.openModal  = openModal;
+window.openModal = openModal;
 window.closeModal = closeModal;
 
 // ── Backdrop click closes modal ──────────────────────────────────────────
@@ -276,9 +278,9 @@ function initChipInput(container) {
 
     // ── Text input where the user types ─────────────────────────────────
     var input = document.createElement('input');
-    input.type        = 'text';
+    input.type = 'text';
     input.placeholder = 'Email or group name…';
-    input.className   = 'flex-1 min-w-[180px] outline-none bg-transparent text-sm py-1';
+    input.className = 'flex-1 min-w-[180px] outline-none bg-transparent text-sm py-1';
     input.setAttribute('aria-label', 'Add recipient');
 
     container.appendChild(input);
@@ -296,7 +298,9 @@ function initChipInput(container) {
 
     // ── Remove a chip ────────────────────────────────────────────────────
     function removeChip(value) {
-        chips = chips.filter(function (c) { return c !== value; });
+        chips = chips.filter(function (c) {
+            return c !== value;
+        });
         updateHidden();
     }
 
@@ -309,12 +313,12 @@ function initChipInput(container) {
     function renderChip(value) {
         var chip = document.createElement('span');
         chip.className = 'inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full ' +
-                         'bg-slate-100 text-slate-700 text-xs font-medium';
+        'bg-slate-100 text-slate-700 text-xs font-medium';
         chip.innerHTML = escapeHtml(value) +
-            '<button type="button" aria-label="Remove ' + escapeHtml(value) + '" ' +
-            '  class="flex items-center text-slate-400 hover:text-slate-700 transition">' +
-            '  <i class="bi bi-x text-sm leading-none"></i>' +
-            '</button>';
+        '<button type="button" aria-label="Remove ' + escapeHtml(value) + '" ' +
+        '  class="flex items-center text-slate-400 hover:text-slate-700 transition">' +
+        '  <i class="bi bi-x text-sm leading-none"></i>' +
+        '</button>';
 
         chip.querySelector('button').addEventListener('click', function () {
             removeChip(value);
@@ -342,18 +346,49 @@ function initChipInput(container) {
     });
 
     // ── Paste: split on commas/newlines and add multiple chips ───────────
-    input.addEventListener('paste', function (event) {
-        event.preventDefault();
-        var pasted = (event.clipboardData || window.clipboardData).getData('text');
-        pasted.split(/[\n,]+/).forEach(function (val) {
-            addChip(val);
+    input.addEventListener('paste',
+        function (event) {
+            event.preventDefault();
+            var pasted = (event.clipboardData || window.clipboardData).getData('text');
+            pasted.split(/[\n,]+/).forEach(function (val) {
+                addChip(val);
+            });
         });
+
+
+    // ── Autocomplete: fire HTMX keyup on the text input ──────────────────────
+    // We trigger a GET /compose/recipient-hints?q= request when the user types
+    // in the chip input text field. The result populates #recipient-autocomplete.
+    input.setAttribute('hx-get',
+        '/compose/recipient-hints');
+    input.setAttribute('hx-trigger',
+        'keyup changed delay:300ms');
+    input.setAttribute('hx-target',
+        '#recipient-autocomplete');
+    input.setAttribute('hx-swap',
+        'innerHTML');
+    input.setAttribute('name',
+        'q');
+
+    // Tell HTMX to process the newly added attributes
+    if (window.htmx) {
+        htmx.process(input);
+    }
+
+    // Hide autocomplete when clicking outside the chip container
+    document.addEventListener('click', function (e) {
+        var dropdown = document.getElementById('recipient-autocomplete-dropdown');
+        var chips = document.getElementById('recipient-chips');
+        if (dropdown && chips && !chips.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
     });
 
     // ── Clicking the container focuses the text input ────────────────────
-    container.addEventListener('click', function () {
-        input.focus();
-    });
+    container.addEventListener('click',
+        function () {
+            input.focus();
+        });
 }
 
 
@@ -368,7 +403,9 @@ document.addEventListener('htmx:afterSwap', function (event) {
     // Only scroll if the target was a major content area, not a small partial
     var target = event.detail.target;
     if (target && (target.id === 'main-content' || target.tagName === 'BODY')) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({
+            top: 0, behavior: 'smooth'
+        });
     }
 });
 
@@ -388,15 +425,15 @@ document.addEventListener('htmx:afterRequest', function () {
 
     // Snap to 100% and fade out
     loader.style.transition = 'width 0.1s ease, opacity 0.3s ease 0.15s';
-    loader.style.width      = '100%';
-    loader.style.opacity    = '1';
+    loader.style.width = '100%';
+    loader.style.opacity = '1';
 
     setTimeout(function () {
         loader.style.opacity = '0';
         setTimeout(function () {
             // Reset back to initial state for next request
             loader.style.transition = '';
-            loader.style.width      = '0%';
+            loader.style.width = '0%';
         }, 350);
     }, 150);
 });
@@ -407,15 +444,20 @@ document.addEventListener('htmx:afterRequest', function () {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /**
- * HTML-escape a string for safe injection into the DOM.
- * Used inside JS-generated HTML (toast messages, chip labels).
- *
- * @param {string} str
- * @returns {string}
- */
+* HTML-escape a string for safe injection into the DOM.
+* Used inside JS-generated HTML (toast messages, chip labels).
+*
+* @param {string} str
+* @returns {string}
+*/
 function escapeHtml(str) {
-    var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return String(str).replace(/[&<>"']/g, function (c) { return map[c]; });
+    var map = {
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    };
+    return String(str).replace(/[&<>"']/g,
+        function (c) {
+            return map[c];
+        });
 }
 
 
@@ -438,4 +480,4 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
-document.addEventListener('htmx:afterSwap',   init);
+document.addEventListener('htmx:afterSwap', init);

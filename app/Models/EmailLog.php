@@ -33,39 +33,75 @@ class EmailLog extends Model
         'status',
     ];
 
-    // ─── Domain methods ────────────────────────────────────────────────────
+    public int     $id;
+    public string  $subject;
+    public string  $recipientsJson;
+    public int     $recipientCount;
+    public ?int    $templateId;
+    public string  $provider;
+    public ?string $providerMessageId;
+    public string  $status;
+    public string  $bodyHtml;
+    public ?string $sentAt;
+    public string  $createdAt;
+
+    public static function fromArray(array $row): static
+    {
+        $obj                    = new static();
+        $obj->id                = (int)    $row['id'];
+        $obj->subject           = (string) $row['subject'];
+        $obj->recipientsJson    = (string) $row['recipients_json'];
+        $obj->recipientCount    = (int)    $row['recipient_count'];
+        $obj->templateId        = isset($row['template_id']) ? (int) $row['template_id'] : null;
+        $obj->provider          = (string) $row['provider'];
+        $obj->providerMessageId = $row['provider_message_id'] ?? null;
+        $obj->status            = (string) $row['status'];
+        $obj->bodyHtml          = (string) $row['body_html'];
+        $obj->sentAt            = $row['sent_at'] ?? null;
+        $obj->createdAt         = (string) $row['created_at'];
+
+        return $obj;
+    }
 
     /**
-     * Decode the recipients_json column into a PHP array.
+     * @return string[]
      */
     public function recipientsArray(): array
     {
-        if (empty($this->recipients_json)) {
-            return [];
-        }
-
-        $decoded = json_decode((string)$this->recipients_json, associative: true);
+        $decoded = json_decode($this->recipientsJson, associative: true);
         return is_array($decoded) ? $decoded : [];
     }
 
     /**
-     * Get a Tailwind CSS colour class for the status badge in the logs view.
-     *
-     * Usage in views:
-     *   <span class="badge <?= e($log->statusBadgeClass()) ?>">
-     *       <?= e($log->status) ?>
-     *   </span>
+     * Return a short summary of recipients for the logs listing.
+     * e.g. "alice@example.com" or "alice@example.com +4 more"
+     */
+    public function recipientSummary(): string
+    {
+        $list = $this->recipientsArray();
+
+        if (empty($list)) return '—';
+
+        $first = $list[0];
+        $extra = count($list) - 1;
+
+        return $extra > 0
+            ? "{$first} +{$extra} more"
+            : $first;
+    }
+
+    /**
+     * Return a Tailwind CSS class pair for the status badge.
      */
     public function statusBadgeClass(): string
     {
-        return match ((string)$this->status) {
-            'sent'      => 'bg-blue-100 text-blue-800',
-            'delivered' => 'bg-green-100 text-green-800',
-            'opened'    => 'bg-teal-100 text-teal-800',
-            'failed'    => 'bg-red-100 text-red-800',
-            'bounced'   => 'bg-orange-100 text-orange-800',
-            'queued'    => 'bg-gray-100 text-gray-800',
-            default     => 'bg-gray-100 text-gray-600',
+        return match ($this->status) {
+            'delivered' => 'bg-emerald-100 text-emerald-800',
+            'sent'      => 'bg-blue-100    text-blue-800',
+            'queued'    => 'bg-slate-100   text-slate-600',
+            'bounced'   => 'bg-amber-100   text-amber-800',
+            'failed'    => 'bg-red-100     text-red-800',
+            default     => 'bg-slate-100   text-slate-600',
         };
     }
 

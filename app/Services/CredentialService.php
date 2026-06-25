@@ -236,4 +236,22 @@ class CredentialService
             ),
         };
     }
+    
+    /**
+ * Build and return the active email provider, or null if none is configured.
+ *
+ * Alias for convenience — called by EmailSendService.
+ *
+ * @return EmailProviderInterface|null
+ */
+public function buildActiveProvider(): ?EmailProviderInterface
+{
+    $credential = $this->getActiveCredential();
+
+    if (!$credential) {
+        return null;
+    }
+
+    return $this->buildProvider($credential);
+}
 }

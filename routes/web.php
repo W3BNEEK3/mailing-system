@@ -11,7 +11,7 @@ use App\Controllers\HomeController;
 
 // ── Guest-only routes ─────────────────────────────────────────────────────
 $router->group(['middleware' => ['guest']], function ($router) {
-    $router->get('/login',  [AuthController::class, 'showLogin']);
+    $router->get('/login', [AuthController::class, 'showLogin']);
     $router->post('/login', [AuthController::class, 'login']);
 });
 
@@ -25,40 +25,57 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->get('/', [HomeController::class, 'index']);
 
     // ── Core pages ────────────────────────────────────────────────────────
-    $router->get('/compose',    [ComposeController::class,   'index']);
+    $router->get('/compose', [ComposeController::class, 'index']);
     $router->get('/recipients', [RecipientController::class, 'index']);
-    $router->get('/logs',       [LogController::class,       'index']);
+    $router->get('/logs', [LogController::class, 'index']);
 
     // ── Settings sub-pages ────────────────────────────────────────────────
-    $router->get('/settings/general',     [SettingsController::class,    'index']);
-    $router->get('/settings/templates',   [TemplateController::class,    'index']);
+    $router->get('/settings/general', [SettingsController::class, 'index']);
+    $router->get('/settings/templates', [TemplateController::class, 'index']);
     // NOTE: /preview-draft must appear BEFORE /{id} routes to avoid the router
     // matching 'preview-draft' as an integer id parameter. Register it first.
     $router->post('/settings/templates/preview-draft', [\App\Controllers\TemplateController::class, 'previewDraft']);
 
-    $router->get ('/settings/templates',                [\App\Controllers\TemplateController::class, 'index']);
-    $router->get ('/settings/templates/create',         [\App\Controllers\TemplateController::class, 'create']);
-    $router->post('/settings/templates',                [\App\Controllers\TemplateController::class, 'store']);
-    $router->get ('/settings/templates/{id}/edit',      [\App\Controllers\TemplateController::class, 'edit']);
-    $router->post('/settings/templates/{id}',           [\App\Controllers\TemplateController::class, 'update']);
-    $router->post('/settings/templates/{id}/delete',    [\App\Controllers\TemplateController::class, 'destroy']);
+    $router->get ('/settings/templates', [\App\Controllers\TemplateController::class, 'index']);
+    $router->get ('/settings/templates/create', [\App\Controllers\TemplateController::class, 'create']);
+    $router->post('/settings/templates', [\App\Controllers\TemplateController::class, 'store']);
+    $router->get ('/settings/templates/{id}/edit', [\App\Controllers\TemplateController::class, 'edit']);
+    $router->post('/settings/templates/{id}', [\App\Controllers\TemplateController::class, 'update']);
+    $router->post('/settings/templates/{id}/delete', [\App\Controllers\TemplateController::class, 'destroy']);
     $router->post('/settings/templates/{id}/duplicate', [\App\Controllers\TemplateController::class, 'duplicate']);
-    $router->get ('/settings/templates/{id}/preview',   [\App\Controllers\TemplateController::class, 'preview']);
-    $router->post('/settings/credentials/test',    [\App\Controllers\CredentialController::class, 'test']);
-    $router->get ('/settings/credentials',         [\App\Controllers\CredentialController::class, 'index']);
-    $router->post('/settings/credentials',         [\App\Controllers\CredentialController::class, 'store']);
+    $router->get ('/settings/templates/{id}/preview', [\App\Controllers\TemplateController::class, 'preview']);
+    $router->post('/settings/credentials/test', [\App\Controllers\CredentialController::class, 'test']);
+    $router->get ('/settings/credentials', [\App\Controllers\CredentialController::class, 'index']);
+    $router->post('/settings/credentials', [\App\Controllers\CredentialController::class, 'store']);
 
 
-    $router->get ('/recipients',                   [\App\Controllers\RecipientController::class, 'index']);
-    $router->get ('/recipients/create',            [\App\Controllers\RecipientController::class, 'create']);
-    $router->post('/recipients',                   [\App\Controllers\RecipientController::class, 'store']);
-    $router->get ('/recipients/import',            [\App\Controllers\RecipientController::class, 'importPage']);
-    $router->post('/recipients/import',            [\App\Controllers\RecipientController::class, 'import']);
-    $router->get ('/recipients/{id}/edit',         [\App\Controllers\RecipientController::class, 'edit']);
-    $router->post('/recipients/{id}',              [\App\Controllers\RecipientController::class, 'update']);
-    $router->post('/recipients/{id}/delete',       [\App\Controllers\RecipientController::class, 'destroy']);
-    $router->post('/recipients/{id}/suppress',     [\App\Controllers\RecipientController::class, 'suppress']);
-    $router->post('/recipients/{id}/unsuppress',   [\App\Controllers\RecipientController::class, 'unsuppress']);
+    $router->get ('/recipients', [\App\Controllers\RecipientController::class, 'index']);
+    $router->get ('/recipients/create', [\App\Controllers\RecipientController::class, 'create']);
+    $router->post('/recipients', [\App\Controllers\RecipientController::class, 'store']);
+    $router->get ('/recipients/import', [\App\Controllers\RecipientController::class, 'importPage']);
+    $router->post('/recipients/import', [\App\Controllers\RecipientController::class, 'import']);
+    $router->get ('/recipients/{id}/edit', [\App\Controllers\RecipientController::class, 'edit']);
+    $router->post('/recipients/{id}', [\App\Controllers\RecipientController::class, 'update']);
+    $router->post('/recipients/{id}/delete', [\App\Controllers\RecipientController::class, 'destroy']);
+    $router->post('/recipients/{id}/suppress', [\App\Controllers\RecipientController::class, 'suppress']);
+    $router->post('/recipients/{id}/unsuppress', [\App\Controllers\RecipientController::class, 'unsuppress']);
+
+
+    $router->get ('/compose', [\App\Controllers\ComposeController::class, 'index']);
+    $router->post('/compose/send', [\App\Controllers\ComposeController::class, 'send']);
+    $router->post('/compose/preview', [\App\Controllers\ComposeController::class, 'preview']);
+    $router->post('/compose/load-template', [\App\Controllers\ComposeController::class, 'loadTemplate']);
+    $router->get ('/compose/recipient-hints', [\App\Controllers\ComposeController::class, 'recipientHints']);
+
+    // ── Drafts ────────────────────────────────────────────────────────────────────
+
+    // NOTE: /autosave must be registered BEFORE /{id} routes to prevent the router
+    // from matching the string 'autosave' as an integer id parameter.
+    $router->post('/drafts/autosave', [\App\Controllers\DraftController::class, 'autosave']);
+    $router->get ('/drafts', [\App\Controllers\DraftController::class, 'index']);
+    $router->post('/drafts', [\App\Controllers\DraftController::class, 'store']);
+    $router->get ('/drafts/{id}/load', [\App\Controllers\DraftController::class, 'load']);
+    $router->post('/drafts/{id}/delete', [\App\Controllers\DraftController::class, 'destroy']);
     /*
      * ── Routes registered for future phases ──────────────────────────────
      * These are declared here (commented in) early so the Router knows

@@ -71,7 +71,7 @@ class RecipientController extends BaseController
             page:             $page,
             perPage:          20,
             search:           $search,
-            includeSuppressed: false,
+            //includeSuppressed: false,
         );
 
         /* HTMX live-search: return only the table rows partial */

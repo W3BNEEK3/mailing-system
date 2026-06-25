@@ -34,6 +34,25 @@ $app->bind(
     )
 );
 
+$app->bind(
+    \App\Controllers\ComposeController::class,
+    fn() => new \App\Controllers\ComposeController(
+        templates:  $app->make(\App\Repositories\TemplateRepository::class),
+        drafts:     $app->make(\App\Repositories\DraftRepository::class),
+        logs:       $app->make(\App\Repositories\LogRepository::class),
+        renderer:   $app->make(\App\Services\TemplateRenderService::class),
+        sendService: $app->make(\App\Services\EmailSendService::class),
+        resolver:   $app->make(\App\Services\RecipientResolverService::class),
+    )
+);
+
+$app->bind(
+    \App\Controllers\DraftController::class,
+    fn() => new \App\Controllers\DraftController(
+        drafts: $app->make(\App\Repositories\DraftRepository::class),
+    )
+);
+
 // ── 4. Register core singletons ────────────────────────────────────────────
 
 // Config: reads config/ files, accessed via config('app.name')
@@ -94,6 +113,20 @@ $app->singleton(\App\Services\TemplateRenderService::class, fn() =>
 $app->singleton(
     \App\Services\CsvImportService::class,
     fn() => new \App\Services\CsvImportService(
+        recipients: $app->make(\App\Repositories\RecipientRepository::class),
+    )
+);
+
+$app->singleton(
+    \App\Services\EmailSendService::class,
+    fn() => new \App\Services\EmailSendService(
+        credentials: $app->make(\App\Services\CredentialService::class),
+    )
+);
+
+$app->singleton(
+    \App\Services\RecipientResolverService::class,
+    fn() => new \App\Services\RecipientResolverService(
         recipients: $app->make(\App\Repositories\RecipientRepository::class),
     )
 );
