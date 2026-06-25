@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect all requests to the public directory
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Block access to sensitive files in the root
+<FilesMatch "^\.env|^\.git|composer\.json|composer\.lock|README\.md">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

@@ -32,42 +32,24 @@ class EmailDraft extends Model
         'last_auto_saved_at',
     ];
 
-    public int     $id;
-    public string  $subject;
-    public string  $recipientsJson;
-    public ?int    $templateId;
-    public string  $bodyHtml;
-    public ?string $emailLogoPath;
-    public ?string $primaryColor;
-    public ?string $secondaryColor;
-    public ?string $replyTo;
-    public string  $ccJson;
-    public string  $bccJson;
-    public string  $createdAt;
-    public string  $updatedAt;
+    // ─── Type-hinted property accessors ───────────────────────────────────
+    // These are documentation helpers — PHP reads the actual values
+    // from $this->attributes via the __get magic method in Model.
 
-    /**
-     * Hydrate an EmailDraft from a PDO row.
-     */
-    public static function fromArray(array $row): static
-    {
-        $obj                  = new static();
-        $obj->id              = (int)    $row['id'];
-        $obj->subject         = (string) $row['subject'];
-        $obj->recipientsJson  = (string) $row['recipients_json'];
-        $obj->templateId      = isset($row['template_id']) ? (int) $row['template_id'] : null;
-        $obj->bodyHtml        = (string) $row['body_html'];
-        $obj->emailLogoPath   = $row['email_logo_path'] ?? null;
-        $obj->primaryColor    = $row['primary_color']   ?? null;
-        $obj->secondaryColor  = $row['secondary_color'] ?? null;
-        $obj->replyTo         = $row['reply_to']        ?? null;
-        $obj->ccJson          = (string) ($row['cc_json']  ?? '[]');
-        $obj->bccJson         = (string) ($row['bcc_json'] ?? '[]');
-        $obj->createdAt       = (string) $row['created_at'];
-        $obj->updatedAt       = (string) $row['updated_at'];
-
-        return $obj;
-    }
+    // public int     $id;
+    // public string  $subject;
+    // public string  $recipients_json;
+    // public ?int    $template_id;
+    // public string  $body_html;
+    // public ?string $email_logo_path;
+    // public ?string $primary_color;
+    // public ?string $secondary_color;
+    // public ?string $reply_to;
+    // public string  $cc_json;
+    // public string  $bcc_json;
+    // public string  $created_at;
+    // public string  $updated_at;
+    // public string  $last_auto_saved_at;
 
     /**
      * Decode the recipients_json column to a PHP array.
@@ -76,7 +58,7 @@ class EmailDraft extends Model
      */
     public function recipientsArray(): array
     {
-        $decoded = json_decode($this->recipientsJson, associative: true);
+        $decoded = json_decode((string)$this->recipients_json, associative: true);
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -87,7 +69,7 @@ class EmailDraft extends Model
      */
     public function ccArray(): array
     {
-        $decoded = json_decode($this->ccJson, associative: true);
+        $decoded = json_decode((string)$this->cc_json, associative: true);
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -98,7 +80,7 @@ class EmailDraft extends Model
      */
     public function bccArray(): array
     {
-        $decoded = json_decode($this->bccJson, associative: true);
+        $decoded = json_decode((string)$this->bcc_json, associative: true);
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -108,12 +90,12 @@ class EmailDraft extends Model
      */
     public function savedAgo(): string
     {
-        $seconds = time() - strtotime($this->updatedAt);
+        $seconds = time() - strtotime((string)$this->updated_at);
 
         if ($seconds < 60)  return 'Saved just now';
         if ($seconds < 3600) return 'Saved ' . floor($seconds / 60) . 'm ago';
         if ($seconds < 86400) return 'Saved ' . floor($seconds / 3600) . 'h ago';
-        return 'Saved ' . date('d M', strtotime($this->updatedAt));
+        return 'Saved ' . date('d M', strtotime((string)$this->updated_at));
     }
     
     /**

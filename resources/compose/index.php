@@ -28,9 +28,9 @@ $flashToast = session()->getFlash('_toast');
 
     <div id="compose-form">
         <input type="hidden" id="draft-id-input" name="draft_id" value="<?= $draft ? $draft->id : '' ?>">
-        <input type="hidden" id="email-logo-path-input" name="email_logo_path" value="<?= e($draft?->emailLogoPath ?? '') ?>">
-        <input type="hidden" id="primary-color-input" name="primary_color" value="<?= e($draft?->primaryColor ?? '') ?>">
-        <input type="hidden" id="secondary-color-input" name="secondary_color" value="<?= e($draft?->secondaryColor ?? '') ?>">
+        <input type="hidden" id="email-logo-path-input" name="email_logo_path" value="<?= e($draft?->email_logo_path ?? '') ?>">
+        <input type="hidden" id="primary-color-input" name="primary_color" value="<?= e($draft?->primary_color ?? '') ?>">
+        <input type="hidden" id="secondary-color-input" name="secondary_color" value="<?= e($draft?->secondary_color ?? '') ?>">
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <?= component('compose/_toolbar', ['templates' => $templates, 'globalContext' => $globalContext, 'draft' => $draft]) ?>
@@ -38,7 +38,7 @@ $flashToast = session()->getFlash('_toast');
             <div class="divide-y divide-slate-100">
                 <?= component('compose/_metadata', ['draft' => $draft]) ?>
                 <div id="compose-area">
-                    <?= component('compose/_editor', ['bodyHtml' => $draft?->bodyHtml ?? '', 'templateId' => $draft?->templateId ?? null]) ?>
+                    <?= component('compose/_editor', ['bodyHtml' => $draft?->body_html ?? '', 'templateId' => $draft?->template_id ?? null]) ?>
                 </div>
                 <div id="translation-controls"></div>
             </div>

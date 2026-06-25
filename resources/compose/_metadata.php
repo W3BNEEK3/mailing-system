@@ -1,7 +1,7 @@
 <?php
 $draftRecipients = $draft ? json_encode($draft->recipientsArray()) : '[]';
 $draftSubject    = $draft?->subject   ?? '';
-$draftReplyTo    = $draft?->replyTo   ?? '';
+$draftReplyTo    = $draft?->reply_to   ?? '';
 $draftCc         = $draft ? json_encode($draft->ccArray())  : '[]';
 $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 ?>

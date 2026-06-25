@@ -93,8 +93,8 @@ $flashToast = session()->getFlash('_toast');
 
     <!-- Recipients table -->
     <div class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <table class="w-full">
-            <thead class="border-b border-slate-200 bg-slate-50">
+        <table class="w-full block sm:table">
+            <thead class="hidden sm:table-header-group border-b border-slate-200 bg-slate-50">
                 <tr class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                     <th class="px-4 py-3">Name</th>
                     <th class="px-4 py-3">Email</th>
@@ -103,7 +103,7 @@ $flashToast = session()->getFlash('_toast');
                     <th class="px-4 py-3 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody id="recipient-table">
+            <tbody id="recipient-table" class="block sm:table-row-group">
                 <?php include BASE_PATH . '/resources/recipients/_table-rows.php'; ?>
             </tbody>
         </table>

@@ -51,6 +51,7 @@ class ResendProvider implements EmailProviderInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer ' . $this->apiKey,
             'Content-Type: application/json'
@@ -83,6 +84,7 @@ class ResendProvider implements EmailProviderInterface
         // Resend /domains endpoint is a safe way to test if an API key is valid
         $ch = curl_init('https://api.resend.com/domains');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer ' . $this->apiKey,
             'Content-Type: application/json'

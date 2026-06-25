@@ -14,7 +14,7 @@ $draftRecipientsRaw = $draft ? $draft->recipientsArray() : [];
 $draftRecipientsText = implode(', ', $draftRecipientsRaw);
 
 $draftSubject = $draft?->subject  ?? '';
-$draftReplyTo = $draft?->replyTo  ?? '';
+$draftReplyTo = $draft?->reply_to  ?? '';
 ?>
 
 <div class="px-6 py-4 space-y-4">

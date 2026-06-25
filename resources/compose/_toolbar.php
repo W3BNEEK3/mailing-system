@@ -1,7 +1,7 @@
 <?php
-$activePrimary   = $draft?->primaryColor   ?? $globalContext->primaryColor;
-$activeSecondary = $draft?->secondaryColor ?? $globalContext->secondaryColor;
-$activeTemplate  = $draft?->templateId     ?? null;
+$activePrimary   = $draft?->primary_color   ?? $globalContext->primaryColor;
+$activeSecondary = $draft?->secondary_color ?? $globalContext->secondaryColor;
+$activeTemplate  = $draft?->template_id     ?? null;
 ?>
 
 <div class="flex items-center gap-2 px-5 py-3 border-b border-slate-100 bg-slate-50 flex-wrap">
@@ -18,7 +18,7 @@ $activeTemplate  = $draft?->templateId     ?? null;
             hx-target="#editor-wrapper"
             hx-swap="outerHTML"
             hx-indicator="#global-loader"
-            <?= ($draft?->bodyHtml) ? 'hx-confirm="Loading a template will overwrite your current email body. Continue?"' : '' ?>
+            <?= ($draft?->body_html) ? 'hx-confirm="Loading a template will overwrite your current email body. Continue?"' : '' ?>
         >
             <option value="">-- Blank Email --</option>
             <?php foreach ($templates as $tmpl): ?>

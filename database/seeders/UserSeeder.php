@@ -30,9 +30,9 @@ class UserSeeder
         $hash = password_hash($password, PASSWORD_DEFAULT);
 
         $stmt = $pdo->prepare(
-            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)"
+            "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)"
         );
-        $stmt->execute([$name, $email, $hash]);
+        $stmt->execute([$name, $email, $hash, 'super_admin']);
 
         echo "    ✅ Admin user created: {$email}\n";
         echo "    ⚠️  Change the password after first login!\n";

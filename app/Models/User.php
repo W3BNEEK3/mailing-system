@@ -22,7 +22,7 @@ class User extends Model
     protected static string $table = 'users';
 
     // Only these columns can be set via create() or update()
-    protected array $fillable = ['name', 'email', 'password_hash'];
+    protected array $fillable = ['name', 'email', 'password_hash', 'role'];
 
     // ─── Type-hinted property accessors ───────────────────────────────────
     // These are documentation helpers — PHP reads the actual values
@@ -53,5 +53,13 @@ class User extends Model
     public function displayName(): string
     {
         return (string)($this->name ?: $this->email);
+    }
+
+    /**
+     * Check if the user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
     }
 }

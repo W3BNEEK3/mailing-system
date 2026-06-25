@@ -15,10 +15,11 @@
 
 <tr
     id="recipient-<?= (int) $recipient->id ?>"
-    class="border-b border-slate-100 text-sm transition <?= $recipient->isSuppressed() ? 'opacity-50 bg-slate-50' : 'hover:bg-slate-50' ?>"
+    class="block sm:table-row border-b border-slate-100 text-sm transition p-4 sm:p-0 <?= $recipient->isSuppressed() ? 'opacity-50 bg-slate-50' : 'hover:bg-slate-50' ?>"
 >
     <!-- Name -->
-    <td class="py-3 px-4 font-medium text-slate-800">
+    <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 font-medium text-slate-800">
+        <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-20">Name</span>
         <?php if ($recipient->isSuppressed()): ?>
             <span class="line-through text-slate-400"><?= e($recipient->fullName()) ?></span>
             <span class="ml-1.5 inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-600">
@@ -30,7 +31,8 @@
     </td>
 
     <!-- Email -->
-    <td class="py-3 px-4 text-slate-600">
+    <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-600">
+        <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-20">Email</span>
         <a href="mailto:<?= e($recipient->email) ?>"
            class="hover:text-blue-600 hover:underline transition">
             <?= e($recipient->email) ?>
@@ -38,18 +40,20 @@
     </td>
 
     <!-- Company -->
-    <td class="py-3 px-4 text-slate-500 hidden sm:table-cell">
+    <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-500">
+        <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-20">Company</span>
         <?= e($recipient->company ?: '—') ?>
     </td>
 
     <!-- Date added -->
-    <td class="py-3 px-4 text-slate-400 text-xs hidden md:table-cell whitespace-nowrap">
+    <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-400 text-xs whitespace-nowrap">
+        <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-20">Added</span>
         <?= e(\App\Helpers\Date::format((string) $recipient->created_at, 'd M Y')) ?>
     </td>
 
     <!-- Actions -->
-    <td class="py-3 px-4">
-        <div class="flex items-center justify-end gap-1">
+    <td class="block sm:table-cell pt-3 pb-1 px-0 sm:py-3 sm:px-4 mt-2 sm:mt-0 border-t sm:border-0 border-slate-100">
+        <div class="flex items-center justify-start sm:justify-end gap-2">
 
             <!-- Edit -->
             <a

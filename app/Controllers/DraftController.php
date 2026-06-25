@@ -148,7 +148,7 @@ class DraftController extends BaseController
      */
     private function findOrFail(int $id): \App\Models\EmailDraft
     {
-        $draft = $this->drafts->findById($id);
+        $draft = $this->drafts->find($id);
 
         if (!$draft) {
             throw new NotFoundException("Draft #{$id} not found.");

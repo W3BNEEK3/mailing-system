@@ -18,18 +18,20 @@ class TemplateRenderService
     {
         $replyTo = $ctx->replyTo ?? $ctx->senderEmail;
 
-        // FIXED: Using flexible, case-insensitive regex to catch {{Logo}}, {{Secondary_color}}, etc.
         $tokens = [
-            '/\{\{\s*(LOGO_URL|LOGO)\s*\}\}/i'             => $ctx->logoUrl,
-            '/\{\{\s*(PRIMARY_COLOR|PRIMARY)\s*\}\}/i'       => $ctx->primaryColor,
-            '/\{\{\s*(SECONDARY_COLOR|SECONDARY)\s*\}\}/i'   => $ctx->secondaryColor,
-            '/\{\{\s*(SENDER_NAME|SENDER)\s*\}\}/i'         => $ctx->senderName,
-            '/\{\{\s*(SENDER_EMAIL|EMAIL)\s*\}\}/i'        => $ctx->senderEmail,
-            '/\{\{\s*(REPLY_TO|REPLYTO)\s*\}\}/i'          => $replyTo,
+            '{{LOGO_URL}}'        => (string)$ctx->logoUrl,
+            '{{PRIMARY_COLOR}}'   => (string)$ctx->primaryColor,
+            '{{SECONDARY_COLOR}}' => (string)$ctx->secondaryColor,
+            '{{SENDER_NAME}}'     => (string)$ctx->senderName,
+            '{{SENDER_EMAIL}}'    => (string)$ctx->senderEmail,
+            '{{REPLY_TO}}'        => (string)$replyTo,
         ];
 
-        $result = preg_replace(array_keys($tokens), array_values($tokens), $html);
-        return $result ?? $html;
+        return str_ireplace(
+            array_keys($tokens),
+            array_values($tokens),
+            $html
+        );
     }
 
     public function renderWithGlobalContext(string $html): string

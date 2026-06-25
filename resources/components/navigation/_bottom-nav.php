@@ -24,11 +24,16 @@ $tabActive = function (string $path) use ($currentUri): bool {
         $tabs = [
             ['Compose',    'bi-pencil-square', '/compose',              '/compose'],
             ['Recipients', 'bi-people',        '/recipients',           '/recipients'],
-            ['Logs',       'bi-clock-history', '/logs',                 '/logs'],
-            ['Templates',  'bi-grid-1x2',      '/settings/templates',   '/settings/templates'],
-            ['Credentials','bi-key',           '/settings/credentials', '/settings/credentials'],
-            ['General',    'bi-gear',          '/settings/general',     '/settings/general'],
         ];
+
+        if (session()->get('user_role') === 'super_admin') {
+            $tabs = array_merge($tabs, [
+                ['Logs',       'bi-clock-history', '/logs',                 '/logs'],
+                ['Templates',  'bi-grid-1x2',      '/settings/templates',   '/settings/templates'],
+                ['Credentials','bi-key',           '/settings/credentials', '/settings/credentials'],
+                ['General',    'bi-gear',          '/settings/general',     '/settings/general'],
+            ]);
+        }
         ?>
 
         <?php foreach ($tabs as [$label, $icon, $prefix, $href]): ?>
@@ -48,5 +53,19 @@ $tabActive = function (string $path) use ($currentUri): bool {
                 <span><?= e($label) ?></span>
             </a>
         <?php endforeach; ?>
+
+        <!-- Logout Button -->
+        <form method="POST" action="<?= url('/logout') ?>" class="flex">
+            <?= csrf_field() ?>
+            <button
+                type="submit"
+                class="flex flex-col items-center justify-center gap-1 min-h-[44px] px-3 sm:px-4
+                       text-[10px] font-medium transition-colors whitespace-nowrap text-slate-400 hover:text-red-500"
+                aria-label="Sign Out"
+            >
+                <i class="bi bi-box-arrow-left text-lg leading-none"></i>
+                <span>Sign Out</span>
+            </button>
+        </form>
     </div>
 </nav>

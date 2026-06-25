@@ -45,6 +45,7 @@ class AuthService
         session()->set('user_id',   (int) $user->id);
         session()->set('user_name', (string) $user->name);
         session()->set('user_email', (string) $user->email);
+        session()->set('user_role', (string) $user->role);
 
         return true;
     }
@@ -57,6 +58,14 @@ class AuthService
     public function check(): bool
     {
         return session()->has('user_id');
+    }
+
+    /**
+     * Check whether the current user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return session()->get('user_role') === 'super_admin';
     }
 
     /**

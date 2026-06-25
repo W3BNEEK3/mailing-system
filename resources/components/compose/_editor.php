@@ -58,14 +58,14 @@
             ];
             foreach ($tokens as $token => $label):
             ?>
-                <button
+                <!--<button
                     type="button"
                     class="text-xs font-mono text-blue-600 hover:text-blue-800 hover:underline"
                     onclick="insertToken('<?= $token ?>')"
                     title="<?= e($label) ?>"
                 >
                     <?= e($token) ?>
-                </button>
+                </button>-->
             <?php endforeach; ?>
         </div>
     </div>

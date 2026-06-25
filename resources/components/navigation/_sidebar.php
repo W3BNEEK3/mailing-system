@@ -86,6 +86,7 @@ $userName = session()->get('user_name', 'User');
             <span>Recipients</span>
         </a>
 
+        <?php if (session()->get('user_role') === 'super_admin'): ?>
         <!-- Email Logs -->
         <a href="<?= url('/logs') ?>"
            class="<?= $navClass('/logs') ?> flex items-center gap-3 px-3 py-2.5 rounded-lg
@@ -124,6 +125,7 @@ $userName = session()->get('user_name', 'User');
             <i class="nav-icon bi bi-gear text-base text-slate-400 flex-shrink-0"></i>
             <span>General</span>
         </a>
+        <?php endif; ?>
 
     </div>
 

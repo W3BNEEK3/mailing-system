@@ -30,23 +30,28 @@ $paginated = $paginated ?? ['total' => 0, 'page' => 1, 'lastPage' => 1];
     </div>
 <?php else: ?>
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-sm">
-            <thead>
+        <table class="w-full text-sm block sm:table">
+            <thead class="hidden sm:table-header-group">
                 <tr class="border-b border-slate-100 bg-slate-50">
                     <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Received</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">From</th>
                     <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Subject</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="block sm:table-row-group divide-y divide-slate-100">
                 <?php foreach ($rows as $row): ?>
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="px-4 py-3 text-slate-500 whitespace-nowrap">
+                    <tr class="block sm:table-row hover:bg-slate-50 transition p-4 sm:p-0">
+                        <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-500 whitespace-nowrap">
+                            <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-24">Received</span>
                             <?= e(!empty($row['received_at']) ? date('d M Y, H:i', strtotime($row['received_at'])) : '—') ?>
                         </td>
-                        <td class="px-4 py-3 text-slate-700"><?= e($row['from_email'] ?? '—') ?></td>
-                        <td class="px-4 py-3 text-slate-800 max-w-[320px]">
-                            <span class="truncate block"><?= e($row['subject'] ?? '(No subject)') ?></span>
+                        <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-700">
+                            <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-24">From</span>
+                            <?= e($row['from_email'] ?? '—') ?>
+                        </td>
+                        <td class="block sm:table-cell py-1 px-0 sm:py-3 sm:px-4 text-slate-800 max-w-[320px]">
+                            <span class="inline-block sm:hidden text-xs text-slate-400 font-semibold uppercase tracking-wider w-24">Subject</span>
+                            <span class="truncate sm:block"><?= e($row['subject'] ?? '(No subject)') ?></span>
                         </td>
                     </tr>
                 <?php endforeach; ?>

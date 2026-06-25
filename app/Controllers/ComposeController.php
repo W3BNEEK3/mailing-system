@@ -84,9 +84,28 @@ class ComposeController extends BaseController
             replyTo:        $replyTo ?: null,
         );
 
-        $renderedHtml = $this->renderer->render($bodyHtml, $renderCtx);
-
         $templateId = isset($post['template_id']) && $post['template_id'] !== '' ? (int) $post['template_id'] : null;
+
+        $finalBodyHtml = $bodyHtml;
+        if ($templateId) {
+            $template = $this->templates->findById($templateId);
+            $origHtml = $template->html_content ?? $template->htmlContent ?? '';
+            
+            if ($origHtml) {
+                $posStart = stripos($origHtml, '<body');
+                if ($posStart !== false) {
+                    $posStartClose = strpos($origHtml, '>', $posStart);
+                    $posEnd = strripos($origHtml, '</body>');
+                    if ($posStartClose !== false && $posEnd !== false) {
+                        $headPart = substr($origHtml, 0, $posStartClose + 1);
+                        $tailPart = substr($origHtml, $posEnd);
+                        $finalBodyHtml = $headPart . "\n" . $bodyHtml . "\n" . $tailPart;
+                    }
+                }
+            }
+        }
+
+        $renderedHtml = $this->renderer->render($finalBodyHtml, $renderCtx);
 
         $payload = new EmailPayload(
             senderName:  $globalCtx->senderName,

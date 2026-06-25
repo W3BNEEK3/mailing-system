@@ -1,7 +1,7 @@
 <?php
-$activePrimary   = $draft?->primaryColor   ?? $globalContext->primaryColor;
-$activeSecondary = $draft?->secondaryColor ?? $globalContext->secondaryColor;
-$activeTemplate  = $draft?->templateId     ?? null;
+$activePrimary   = $draft?->primary_color   ?? $globalContext->primaryColor;
+$activeSecondary = $draft?->secondary_color ?? $globalContext->secondaryColor;
+$activeTemplate  = $draft?->template_id     ?? null;
 ?>
 
 <div class="flex items-center gap-2 px-5 py-3 border-b border-slate-100 bg-slate-50 flex-wrap">

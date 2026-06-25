@@ -244,9 +244,10 @@ class Router
     private function resolveMiddleware(array $names): array
     {
         $map = [
-            'auth'  => \App\Middlewares\AuthMiddleware::class,
-            'guest' => \App\Middlewares\GuestMiddleware::class,
-            'csrf'  => \App\Middlewares\CsrfMiddleware::class,
+            'auth'        => \App\Middlewares\AuthMiddleware::class,
+            'guest'       => \App\Middlewares\GuestMiddleware::class,
+            'csrf'        => \App\Middlewares\CsrfMiddleware::class,
+            'super_admin' => \App\Middlewares\SuperAdminMiddleware::class,
         ];
 
         return array_map(function (string $name) use ($map) {
@@ -255,7 +256,7 @@ class Router
                     "Unknown middleware [{$name}]. Register it in Router::resolveMiddleware()."
                 );
             }
-            return new $map[$name]();
+            return \App\Core\App::getInstance()->make($map[$name]);
         }, $names);
     }
 }

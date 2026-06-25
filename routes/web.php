@@ -27,26 +27,30 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     // ── Core pages ────────────────────────────────────────────────────────
     $router->get('/compose', [ComposeController::class, 'index']);
     $router->get('/recipients', [RecipientController::class, 'index']);
-    $router->get('/logs', [LogController::class, 'index']);
+    // ── Super Admin Only ──────────────────────────────────────────────────
+    $router->group(['middleware' => ['super_admin']], function ($router) {
+        $router->get('/logs', [LogController::class, 'index']);
 
-    // ── Settings sub-pages ────────────────────────────────────────────────
-    $router->get('/settings/general', [SettingsController::class, 'index']);
-    $router->get('/settings/templates', [TemplateController::class, 'index']);
-    // NOTE: /preview-draft must appear BEFORE /{id} routes to avoid the router
-    // matching 'preview-draft' as an integer id parameter. Register it first.
-    $router->post('/settings/templates/preview-draft', [\App\Controllers\TemplateController::class, 'previewDraft']);
+        // ── Settings sub-pages ────────────────────────────────────────────────
+        $router->get('/settings/general', [SettingsController::class, 'index']);
+        
+        // NOTE: /preview-draft must appear BEFORE /{id} routes to avoid the router
+        // matching 'preview-draft' as an integer id parameter. Register it first.
+        $router->post('/settings/templates/preview-draft', [\App\Controllers\TemplateController::class, 'previewDraft']);
 
-    $router->get ('/settings/templates', [\App\Controllers\TemplateController::class, 'index']);
-    $router->get ('/settings/templates/create', [\App\Controllers\TemplateController::class, 'create']);
-    $router->post('/settings/templates', [\App\Controllers\TemplateController::class, 'store']);
-    $router->get ('/settings/templates/{id}/edit', [\App\Controllers\TemplateController::class, 'edit']);
-    $router->post('/settings/templates/{id}', [\App\Controllers\TemplateController::class, 'update']);
-    $router->post('/settings/templates/{id}/delete', [\App\Controllers\TemplateController::class, 'destroy']);
-    $router->post('/settings/templates/{id}/duplicate', [\App\Controllers\TemplateController::class, 'duplicate']);
-    $router->get ('/settings/templates/{id}/preview', [\App\Controllers\TemplateController::class, 'preview']);
-    $router->post('/settings/credentials/test', [\App\Controllers\CredentialController::class, 'test']);
-    $router->get ('/settings/credentials', [\App\Controllers\CredentialController::class, 'index']);
-    $router->post('/settings/credentials', [\App\Controllers\CredentialController::class, 'store']);
+        $router->get ('/settings/templates', [\App\Controllers\TemplateController::class, 'index']);
+        $router->get ('/settings/templates/create', [\App\Controllers\TemplateController::class, 'create']);
+        $router->post('/settings/templates', [\App\Controllers\TemplateController::class, 'store']);
+        $router->get ('/settings/templates/{id}/edit', [\App\Controllers\TemplateController::class, 'edit']);
+        $router->post('/settings/templates/{id}', [\App\Controllers\TemplateController::class, 'update']);
+        $router->post('/settings/templates/{id}/delete', [\App\Controllers\TemplateController::class, 'destroy']);
+        $router->post('/settings/templates/{id}/duplicate', [\App\Controllers\TemplateController::class, 'duplicate']);
+        $router->get ('/settings/templates/{id}/preview', [\App\Controllers\TemplateController::class, 'preview']);
+        
+        $router->post('/settings/credentials/test', [\App\Controllers\CredentialController::class, 'test']);
+        $router->get ('/settings/credentials', [\App\Controllers\CredentialController::class, 'index']);
+        $router->post('/settings/credentials', [\App\Controllers\CredentialController::class, 'store']);
+    });
 
 
     $router->get ('/recipients', [\App\Controllers\RecipientController::class, 'index']);
