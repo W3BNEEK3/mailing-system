@@ -188,29 +188,54 @@ $siteLogo       = setting('site_logo_path',  null);
         function initChipInput(container) {
             var hiddenInput = document.querySelector('input[name="' + container.dataset.hiddenName + '"]');
             if (!hiddenInput) return;
+            
             var chips = [];
+            try {
+                var existing = JSON.parse(hiddenInput.value || '[]');
+                if (Array.isArray(existing)) chips = existing;
+            } catch (e) { chips = []; }
 
             var input = document.createElement('input');
             input.type = 'text';
             input.placeholder = 'Email or group name…';
             input.className = 'flex-1 min-w-[180px] outline-none bg-transparent text-sm py-1';
+            input.setAttribute('aria-label', 'Add recipient');
             container.appendChild(input);
+
+            chips.forEach(function (v) { renderChip(v); });
 
             function addChip(value) {
                 value = value.trim();
                 if (!value || chips.includes(value)) return;
                 chips.push(value);
+                updateHidden();
+                renderChip(value);
+                input.value = '';
+            }
+
+            container._addChip = addChip;
+
+            function removeChip(value) {
+                chips = chips.filter(function (c) { return c !== value; });
+                updateHidden();
+            }
+
+            function updateHidden() {
                 hiddenInput.value = JSON.stringify(chips);
+                document.dispatchEvent(new CustomEvent('recipientsUpdated', { detail: { chips: chips, count: chips.length } }));
+            }
+
+            document.dispatchEvent(new CustomEvent('recipientsUpdated', { detail: { chips: chips, count: chips.length } }));
+
+            function renderChip(value) {
                 var chip = document.createElement('span');
                 chip.className = 'inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium mt-1 mb-1';
                 chip.innerHTML = escapeHtml(value) + '<button type="button" class="flex items-center text-slate-400 hover:text-slate-700 transition"><i class="bi bi-x text-sm leading-none"></i></button>';
                 chip.querySelector('button').addEventListener('click', function () {
-                    chips = chips.filter(function (c) { return c !== value; });
-                    hiddenInput.value = JSON.stringify(chips);
+                    removeChip(value);
                     container.removeChild(chip);
                 });
                 container.insertBefore(chip, input);
-                input.value = '';
             }
 
             input.addEventListener('keydown', function (event) {
@@ -220,18 +245,33 @@ $siteLogo       = setting('site_logo_path',  null);
                 if (event.key === 'Backspace' && input.value === '' && chips.length > 0) {
                     var last = chips[chips.length - 1];
                     var lastChipEl = container.querySelector('span:last-of-type');
-                    chips = chips.filter(function (c) { return c !== last; });
-                    hiddenInput.value = JSON.stringify(chips);
+                    removeChip(last);
                     if (lastChipEl) container.removeChild(lastChipEl);
                 }
             });
 
+            input.addEventListener('paste', function (event) {
+                event.preventDefault();
+                var pasted = (event.clipboardData || window.clipboardData).getData('text');
+                pasted.split(/[\n,]+/).forEach(function (val) { addChip(val); });
+            });
+
             input.setAttribute('hx-get', '/compose/recipient-hints');
-            input.setAttribute('hx-trigger', 'keyup changed delay:300ms');
+            input.setAttribute('hx-trigger', 'focus, keyup changed delay:300ms');
             input.setAttribute('hx-target', '#recipient-autocomplete');
             input.setAttribute('hx-swap', 'innerHTML');
             input.setAttribute('name', 'q');
             if (window.htmx) htmx.process(input);
+
+            document.addEventListener('click', function (e) {
+                var dropdown = document.getElementById('recipient-autocomplete-dropdown');
+                var chipsCont = document.getElementById('recipient-chips');
+                if (dropdown && chipsCont && !chipsCont.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            container.addEventListener('click', function () { input.focus(); });
         }
 
         document.addEventListener('htmx:afterSwap', function (event) {
