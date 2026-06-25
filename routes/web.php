@@ -54,6 +54,7 @@ $router->group(['middleware' => ['auth', 'csrf']], function ($router) {
     $router->post('/recipients', [\App\Controllers\RecipientController::class, 'store']);
     $router->get ('/recipients/import', [\App\Controllers\RecipientController::class, 'importPage']);
     $router->post('/recipients/import', [\App\Controllers\RecipientController::class, 'import']);
+    $router->post('/recipients/batch-save', [\App\Controllers\RecipientController::class, 'batchSave']);
     $router->get ('/recipients/{id}/edit', [\App\Controllers\RecipientController::class, 'edit']);
     $router->post('/recipients/{id}', [\App\Controllers\RecipientController::class, 'update']);
     $router->post('/recipients/{id}/delete', [\App\Controllers\RecipientController::class, 'destroy']);

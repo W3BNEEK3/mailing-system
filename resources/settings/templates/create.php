@@ -188,29 +188,52 @@ $fieldErrors = errors();
 </div>
 
 <script>
-/** Switch between the Upload File and Paste HTML input tabs. */
-function switchTab(mode) {
-    const uploadPanel = document.getElementById('panel-upload');
-    const pastePanel  = document.getElementById('panel-paste');
-    const uploadBtn   = document.getElementById('tab-upload');
-    const pasteBtn    = document.getElementById('tab-paste');
+document.addEventListener('DOMContentLoaded', function() {
+    const ta = document.getElementById('html_content');
+    if (!ta) return;
 
-    if (mode === 'paste') {
-        uploadPanel.classList.add('hidden');
-        pastePanel.classList.remove('hidden');
-        pasteBtn.classList.add('bg-slate-800', 'text-white');
-        pasteBtn.classList.remove('bg-white', 'text-slate-600');
-        uploadBtn.classList.remove('bg-slate-800', 'text-white');
-        uploadBtn.classList.add('bg-white', 'text-slate-600');
-    } else {
-        pastePanel.classList.add('hidden');
-        uploadPanel.classList.remove('hidden');
-        uploadBtn.classList.add('bg-slate-800', 'text-white');
-        uploadBtn.classList.remove('bg-white', 'text-slate-600');
-        pasteBtn.classList.remove('bg-slate-800', 'text-white');
-        pasteBtn.classList.add('bg-white', 'text-slate-600');
-    }
-}
+    const editor = CodeMirror.fromTextArea(ta, {
+        mode: "htmlmixed",
+        lineNumbers: true,
+        lineWrapping: true,
+        theme: "default"
+    });
+
+    editor.on('change', function() {
+        editor.save();
+        // Trigger the htmx keyup event manually since typing happens in CM
+        if (window.htmx) {
+            htmx.trigger(ta, 'keyup');
+        }
+    });
+
+    // Handle tab switching
+    window.switchTab = function(mode) {
+        const uploadPanel = document.getElementById('panel-upload');
+        const pastePanel  = document.getElementById('panel-paste');
+        const uploadBtn   = document.getElementById('tab-upload');
+        const pasteBtn    = document.getElementById('tab-paste');
+
+        if (mode === 'paste') {
+            uploadPanel.classList.add('hidden');
+            pastePanel.classList.remove('hidden');
+            pasteBtn.classList.add('bg-slate-800', 'text-white');
+            pasteBtn.classList.remove('bg-white', 'text-slate-600');
+            uploadBtn.classList.remove('bg-slate-800', 'text-white');
+            uploadBtn.classList.add('bg-white', 'text-slate-600');
+            
+            // Refresh CM to fix display issues if initialized while hidden
+            setTimeout(() => editor.refresh(), 10);
+        } else {
+            pastePanel.classList.add('hidden');
+            uploadPanel.classList.remove('hidden');
+            uploadBtn.classList.add('bg-slate-800', 'text-white');
+            uploadBtn.classList.remove('bg-white', 'text-slate-600');
+            pasteBtn.classList.remove('bg-slate-800', 'text-white');
+            pasteBtn.classList.add('bg-white', 'text-slate-600');
+        }
+    };
+});
 
 /**
  * HTMX fires hx-on::after-request after the preview-draft POST completes.

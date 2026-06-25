@@ -73,15 +73,57 @@
 </div>
 
 <script>
-/**
- * Insert a token string at the cursor position in the body textarea.
- */
-function insertToken(token) {
-    var ta    = document.getElementById('body-html-input');
-    var start = ta.selectionStart;
-    var end   = ta.selectionEnd;
-    ta.value  = ta.value.slice(0, start) + token + ta.value.slice(end);
-    ta.selectionStart = ta.selectionEnd = start + token.length;
-    ta.focus();
-}
+(function() {
+    var ta = document.getElementById('body-html-input');
+    if (!ta) return;
+
+    // Destroy existing instance if HTMX swap over existing editor
+    if (window.tinymce && tinymce.get('body-html-input')) {
+        tinymce.get('body-html-input').remove();
+    }
+
+    tinymce.init({
+        selector: '#body-html-input',
+        height: 500,
+        menubar: false,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | tokens | code | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 15px; }',
+        setup: function(editor) {
+            // Add custom Tokens menu button
+            editor.ui.registry.addMenuButton('tokens', {
+                text: 'Tokens',
+                fetch: function (callback) {
+                    var items = [
+                        { type: 'menuitem', text: 'Logo URL ({{LOGO_URL}})', onAction: function () { editor.insertContent('{{LOGO_URL}}'); } },
+                        { type: 'menuitem', text: 'Primary Color ({{PRIMARY_COLOR}})', onAction: function () { editor.insertContent('{{PRIMARY_COLOR}}'); } },
+                        { type: 'menuitem', text: 'Secondary Color ({{SECONDARY_COLOR}})', onAction: function () { editor.insertContent('{{SECONDARY_COLOR}}'); } },
+                        { type: 'menuitem', text: 'Sender Name ({{SENDER_NAME}})', onAction: function () { editor.insertContent('{{SENDER_NAME}}'); } },
+                        { type: 'menuitem', text: 'Sender Email ({{SENDER_EMAIL}})', onAction: function () { editor.insertContent('{{SENDER_EMAIL}}'); } },
+                    ];
+                    callback(items);
+                }
+            });
+
+            // Sync to textarea for HTMX
+            editor.on('change keyup paste', function() {
+                editor.save();
+                ta.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        }
+    });
+
+    window.insertToken = function(token) {
+        if (tinymce.get('body-html-input')) {
+            tinymce.get('body-html-input').insertContent(token);
+        }
+    };
+})();
 </script>

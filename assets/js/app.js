@@ -384,7 +384,7 @@ function initChipInput(container) {
     input.setAttribute('hx-get',
         '/compose/recipient-hints');
     input.setAttribute('hx-trigger',
-        'keyup changed delay:300ms');
+        'focus, keyup changed delay:300ms');
     input.setAttribute('hx-target',
         '#recipient-autocomplete');
     input.setAttribute('hx-swap',

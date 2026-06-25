@@ -19,6 +19,8 @@ $siteLogo       = setting('site_logo_path',  null);
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 
+    <!-- TinyMCE -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         :root {
             --color-primary:   <?= e($primaryColor) ?>;
@@ -59,6 +61,12 @@ $siteLogo       = setting('site_logo_path',  null);
 
         @media (max-width: 767px) {
             #main-content { padding-bottom: 5rem; }
+        }
+
+        /* TinyMCE Customization */
+        .tox-tinymce {
+            border-radius: 0.5rem !important;
+            border: 1px solid #e2e8f0 !important;
         }
     </style>
 </head>

@@ -126,9 +126,15 @@ class ComposeController extends BaseController
             $successMsg = 'Email sent to ' . count($resolved->emails) . ' recipient' . (count($resolved->emails) > 1 ? 's' : '') . '.';
             if ($resolved->warningMessage() !== '') $successMsg .= ' Note: ' . $resolved->warningMessage();
 
-            return $this->partial('compose/_form-reset')
+            $response = $this->partial('compose/_form-reset')
                 ->htmxTrigger('showToast', ['type' => 'success', 'message' => $successMsg])
                 ->htmxTrigger('composeSent');
+
+            if (!empty($resolved->unsavedEmails)) {
+                $response->htmxTrigger('promptSaveRecipients', ['emails' => $resolved->unsavedEmails]);
+            }
+
+            return $response;
 
         } catch (ProviderException $e) {
             $this->logs->insertErrorLog(array_merge($logData, ['error_message' => $e->getMessage()]));
@@ -192,10 +198,14 @@ class ComposeController extends BaseController
     public function recipientHints(Request $request): Response
     {
         $query = trim($request->get('q', ''));
-        if (strlen($query) < 2) return $this->partial('compose/_autocomplete-dropdown', ['suggestions' => []]);
-
-        $contacts = $this->resolver->searchContacts($query);
-        $groups = array_filter($this->resolver->allGroups(), fn($g) => stripos($g, $query) !== false);
+        
+        if ($query === '') {
+            $contacts = $this->resolver->searchContacts('');
+            $groups = $this->resolver->allGroups();
+        } else {
+            $contacts = $this->resolver->searchContacts($query);
+            $groups = array_filter($this->resolver->allGroups(), fn($g) => stripos($g, $query) !== false);
+        }
 
         $suggestions = [];
         foreach ($contacts as $contact) {
@@ -205,6 +215,7 @@ class ComposeController extends BaseController
             $suggestions[] = ['type' => 'group', 'value' => $group, 'label' => '🏷 ' . $group . ' (group)'];
         }
 
+        // Return up to 8 suggestions
         return $this->partial('compose/_autocomplete-dropdown', ['suggestions' => array_slice($suggestions, 0, 8)]);
     }
 }

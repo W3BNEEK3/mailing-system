@@ -156,11 +156,29 @@ function updatePreviewSrcdoc(event) {
     }
 }
 
-// Load the initial preview on page load using the existing HTML
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('html_content');
     const iframe   = document.getElementById('preview-iframe');
-    if (textarea && iframe && textarea.value.trim()) {
+    
+    if (!textarea) return;
+
+    const editor = CodeMirror.fromTextArea(textarea, {
+        mode: "htmlmixed",
+        lineNumbers: true,
+        lineWrapping: true,
+        theme: "default"
+    });
+
+    editor.on('change', function() {
+        editor.save();
+        // Trigger the htmx keyup event manually since typing happens in CM
+        if (window.htmx) {
+            htmx.trigger(textarea, 'keyup');
+        }
+    });
+
+    // Load the initial preview on page load using the existing HTML
+    if (iframe && textarea.value.trim()) {
         fetch('/settings/templates/preview-draft', {
             method: 'POST',
             headers: {
@@ -173,5 +191,5 @@ function updatePreviewSrcdoc(event) {
         .then(html => { iframe.srcdoc = html; })
         .catch(() => {});
     }
-})();
+});
 </script>

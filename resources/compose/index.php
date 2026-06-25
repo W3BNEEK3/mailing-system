@@ -72,6 +72,11 @@ $flashToast = session()->getFlash('_toast');
     </div>
 
     <div hx-post="/drafts/autosave" hx-include="#compose-form" hx-target="#autosave-status" hx-swap="outerHTML" hx-trigger="every 60s" aria-hidden="true"></div>
+
+
+
+    <!-- Save Recipients Modal -->
+    <?= component('compose/_save-recipients-modal') ?>
 </div>
 
 <?= component('compose/_send-modal') ?>

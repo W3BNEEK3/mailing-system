@@ -49,6 +49,7 @@ class RecipientResolverService
         $emails        = [];  // Collector: all resolved email strings
         $suppressedCount = 0; // Counter: contacts filtered due to suppression
         $unknownGroups = [];  // Collector: group names that weren't found in DB
+        $unsavedEmails = [];  // Collector: manual emails not found in DB
 
         foreach ($rawInputs as $input) {
             $input = trim($input);
@@ -67,6 +68,9 @@ class RecipientResolverService
                 } else {
                     // Not suppressed (or not in DB — unknown contacts are accepted)
                     $emails[] = $input;
+                    if ($contact === null) {
+                        $unsavedEmails[] = $input;
+                    }
                 }
             } else {
                 // Treat as a group name — expand to member emails
@@ -89,11 +93,13 @@ class RecipientResolverService
 
         // Deduplicate while preserving order (array_unique preserves keys)
         $emails = array_values(array_unique($emails));
+        $unsavedEmails = array_values(array_unique($unsavedEmails));
 
         return new ResolveResult(
             emails:          $emails,
             suppressedCount: $suppressedCount,
             unknownGroups:   $unknownGroups,
+            unsavedEmails:   $unsavedEmails,
         );
     }
 
@@ -145,11 +151,13 @@ readonly class ResolveResult
      * @param string[] $emails           Flat, deduplicated, non-suppressed email addresses
      * @param int      $suppressedCount  How many contacts were excluded due to suppression
      * @param string[] $unknownGroups    Group names that were not found in the DB
+     * @param string[] $unsavedEmails    Email addresses that are not saved in the DB
      */
     public function __construct(
         public array $emails,
         public int   $suppressedCount,
         public array $unknownGroups,
+        public array $unsavedEmails = [],
     ) {}
 
     /**

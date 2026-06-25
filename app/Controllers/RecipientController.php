@@ -163,6 +163,53 @@ class RecipientController extends BaseController
         return $this->redirect('/recipients');
     }
 
+    /**
+     * POST /recipients/batch-save
+     * Handle the save unsaved recipients modal submission.
+     */
+    public function batchSave(Request $request): Response
+    {
+        $contacts = $request->post('contacts', []);
+        if (!is_array($contacts) || empty($contacts)) {
+            return Response::html('')
+                ->htmxTrigger('showToast', ['type' => 'info', 'message' => 'No contacts to save.'])
+                ->htmxTrigger('closeModal', ['id' => 'save-recipients-modal']);
+        }
+
+        $savedCount = 0;
+        foreach ($contacts as $contactData) {
+            $email = trim($contactData['email'] ?? '');
+            if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+
+            // Skip if already exists
+            if ($this->recipients->findByEmail($email)) {
+                continue;
+            }
+
+            $this->recipients->create([
+                'email'      => $email,
+                'first_name' => trim($contactData['first_name'] ?? ''),
+                'last_name'  => trim($contactData['last_name'] ?? ''),
+                'company'    => '',
+                'notes'      => 'Saved automatically from compose page',
+            ]);
+            $savedCount++;
+        }
+
+        if ($savedCount > 0) {
+            $msg = "{$savedCount} new contact" . ($savedCount > 1 ? 's' : '') . " saved successfully.";
+            return Response::html('')
+                ->htmxTrigger('showToast', ['type' => 'success', 'message' => $msg])
+                ->htmxTrigger('closeModal', ['id' => 'save-recipients-modal']); // Custom event listener for this
+        }
+
+        return Response::html('')
+            ->htmxTrigger('showToast', ['type' => 'info', 'message' => 'Contacts already exist or invalid.'])
+            ->htmxTrigger('closeModal', ['id' => 'save-recipients-modal']);
+    }
+
     // ─── GET /recipients/{id}/edit ────────────────────────────────────────────
 
     /*
