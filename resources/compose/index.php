@@ -18,9 +18,7 @@ $flashToast = session()->getFlash('_toast');
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-slate-900">Compose</h1>
-            <p class="text-sm text-slate-500 mt-0.5">
-                Write, preview, and send your email.
-            </p>
+            <p class="text-sm text-slate-500 mt-0.5">Write, preview, and send your email.</p>
         </div>
         <button type="button" hx-get="/drafts" hx-target="#drafts-drawer-content" hx-swap="innerHTML" onclick="openDraftsDrawer()"
             class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
@@ -30,7 +28,6 @@ $flashToast = session()->getFlash('_toast');
 
     <div id="compose-form">
         <input type="hidden" id="draft-id-input" name="draft_id" value="<?= $draft ? $draft->id : '' ?>">
-        <input type="hidden" id="template-id-input" name="template_id" value="<?= $draft?->templateId ?? '' ?>">
         <input type="hidden" id="email-logo-path-input" name="email_logo_path" value="<?= e($draft?->emailLogoPath ?? '') ?>">
         <input type="hidden" id="primary-color-input" name="primary_color" value="<?= e($draft?->primaryColor ?? '') ?>">
         <input type="hidden" id="secondary-color-input" name="secondary_color" value="<?= e($draft?->secondaryColor ?? '') ?>">
@@ -38,15 +35,15 @@ $flashToast = session()->getFlash('_toast');
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <?= component('compose/_toolbar', ['templates' => $templates, 'globalContext' => $globalContext, 'draft' => $draft]) ?>
             
-           <div class="divide-y divide-slate-100">
+            <div class="divide-y divide-slate-100">
                 <?= component('compose/_metadata', ['draft' => $draft]) ?>
                 <div id="compose-area">
                     <?= component('compose/_editor', ['bodyHtml' => $draft?->bodyHtml ?? '', 'templateId' => $draft?->templateId ?? null]) ?>
                 </div>
                 <div id="translation-controls"></div>
             </div>
+
             <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 bg-slate-50 border-t border-slate-100 gap-4">
-                
                 <div class="order-2 sm:order-1 text-center sm:text-left">
                     <span id="autosave-status" class="text-xs text-slate-400">
                         <?= $draft ? $draft->savedAgo() : 'Not saved yet' ?>
@@ -92,7 +89,6 @@ $flashToast = session()->getFlash('_toast');
         document.getElementById('draft-id-input').value = '';
     });
 
-    // FIXED: Bulletproof global listener to catch the preview request and open the iframe
     document.body.addEventListener('htmx:afterRequest', function (event) {
         var elt = event.detail.elt;
         if (elt && elt.getAttribute('hx-post') === '/compose/preview') {
@@ -170,6 +166,11 @@ $flashToast = session()->getFlash('_toast');
         var swatch = document.getElementById(swatchId);
         if (input) input.value = value;
         if (swatch) swatch.style.backgroundColor = value;
+    }
+
+    function escapeHtml(str) {
+        var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(str).replace(/[&<>"']/g, function(c) { return map[c]; });
     }
 
     document.addEventListener('keydown', function (e) {

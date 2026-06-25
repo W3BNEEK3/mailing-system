@@ -1,4 +1,10 @@
 <?php
+/**
+ * resources/components/compose/_metadata.php
+ *
+ * The "envelope" fields: To (chip input), Subject, and collapsed CC/BCC/Reply-To.
+ */
+
 $draftRecipients = $draft ? json_encode($draft->recipientsArray()) : '[]';
 $draftSubject    = $draft?->subject   ?? '';
 $draftReplyTo    = $draft?->replyTo   ?? '';
@@ -45,6 +51,9 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 </div>
 
 <script>
+/**
+ * Update the recipient count badge in the toolbar when the chip input changes.
+ */
 (function () {
     var hiddenInput = document.getElementById('recipients-hidden');
     var badge       = document.getElementById('recipient-count-badge');
