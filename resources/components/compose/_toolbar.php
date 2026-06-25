@@ -10,6 +10,7 @@ $activeTemplate  = $draft?->templateId     ?? null;
         <label for="template-selector" class="text-xs font-medium text-slate-500 whitespace-nowrap flex-shrink-0">
             Template
         </label>
+        <!-- FIXED: Unconditional hx-confirm -->
         <select
             id="template-selector"
             name="template_id"
@@ -19,7 +20,7 @@ $activeTemplate  = $draft?->templateId     ?? null;
             hx-target="#editor-wrapper"
             hx-swap="outerHTML"
             hx-indicator="#global-loader"
-            <?= ($draft?->bodyHtml) ? 'hx-confirm="Loading a template will overwrite your current email body. Continue?"' : '' ?>
+            hx-confirm="Loading a template will overwrite your current email body. Continue?"
         >
             <option value="">-- Blank Email --</option>
             <?php foreach ($templates as $tmpl): ?>
@@ -32,6 +33,7 @@ $activeTemplate  = $draft?->templateId     ?? null;
 
     <div class="flex items-center gap-1.5 flex-shrink-0">
 
+        <!-- Translate Dropdown -->
         <div class="relative hidden sm:block">
             <select
                 name="target_lang"

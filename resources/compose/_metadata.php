@@ -1,10 +1,4 @@
 <?php
-/**
- * resources/components/compose/_metadata.php
- *
- * The "envelope" fields: To (chip input), Subject, and collapsed CC/BCC/Reply-To.
- */
-
 $draftRecipients = $draft ? json_encode($draft->recipientsArray()) : '[]';
 $draftSubject    = $draft?->subject   ?? '';
 $draftReplyTo    = $draft?->replyTo   ?? '';
@@ -14,6 +8,7 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 
 <div class="px-6 py-4 space-y-4">
 
+    <!-- To (chip input) -->
     <div class="relative">
         <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
             To
@@ -28,12 +23,17 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
         <div id="recipient-autocomplete" class="absolute left-0 right-0 top-full mt-1 z-50"></div>
     </div>
 
+    <!-- FIXED: Restored classic outlined input and label for Subject -->
     <div>
+        <label for="subject-input" class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            Subject
+        </label>
         <input type="text" id="subject-input" name="subject" value="<?= e($draftSubject) ?>"
-               placeholder="Email Subject"
-               class="w-full bg-transparent text-xl font-semibold text-slate-900 placeholder-slate-400 focus:outline-none py-1">
+               placeholder="Enter Email Subject"
+               class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
     </div>
 
+    <!-- Extra fields toggle -->
     <div>
         <button type="button" onclick="document.getElementById('advanced-meta').classList.toggle('hidden')" class="text-xs font-medium text-blue-600 hover:text-blue-800 transition">
             + Add CC / BCC / Reply-To
@@ -51,9 +51,6 @@ $draftBcc        = $draft ? json_encode($draft->bccArray()) : '[]';
 </div>
 
 <script>
-/**
- * Update the recipient count badge in the toolbar when the chip input changes.
- */
 (function () {
     var hiddenInput = document.getElementById('recipients-hidden');
     var badge       = document.getElementById('recipient-count-badge');

@@ -181,13 +181,14 @@ class ComposeController extends BaseController
             throw new NotFoundException("Template #{$templateId} not found.");
         }
 
-        // FIXED: Do NOT render tokens here! Return the raw template HTML so the dynamic tokens remain intact for the preview/send flow.
+        // FIXED: Reading the exact database column 'html_content'
+        $html = $template->html_content ?? $template->htmlContent ?? '';
+
         return $this->partial('compose/_editor', [
-            'bodyHtml'   => $template->htmlContent,
+            'bodyHtml'   => $html,
             'templateId' => $template->id,
         ]);
     }
-
     public function recipientHints(Request $request): Response
     {
         $query = trim($request->get('q', ''));
